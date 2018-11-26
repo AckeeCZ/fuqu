@@ -8,7 +8,7 @@ export type FuquRequestData = pubSub.GooglePubSubRequestData | object;
 export type FuquCallback<Message> = (message: Message) => void;
 
 export interface FuquOperations {
-    in(data: any): Promise<any>;
+    in(data: any): any;
     off(callback: FuquCallback<any>): any;
 }
 
@@ -42,7 +42,7 @@ export class Fuqu<Message extends FuquMessage = FuquMessage> implements FuquOper
                 throw new Error(`Unsupported type ${type}`);
         }
     }
-    public in(data: FuquRequestData): Promise<any> {
+    public in(data: FuquRequestData): any {
         return this.instance.in(data);
     }
     public off(callback: FuquCallback<Message>): any {

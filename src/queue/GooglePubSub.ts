@@ -15,12 +15,12 @@ export interface GooglePubSubRequestData {
 }
 
 export interface GooglePubSubMessage extends FuquMessage {
-    ackId: string;
-    attributes: object;
-    connectionId: string;
-    length: number;
-    publishTime: Date;
-    received: number;
+    ackId?: string;
+    attributes?: object;
+    connectionId?: string;
+    length?: number;
+    publishTime?: Date;
+    received?: number;
 }
 
 export class GooglePubSub implements FuquOperations {
@@ -31,8 +31,9 @@ export class GooglePubSub implements FuquOperations {
         this.googlePubSub = new PubSub(options);
         this.logger = options.logger || console;
         this.topic = options.topicName;
-        this.initTopic();
-        this.initSubscription();
+        this.initTopic()
+            .then(() => this.initSubscription())
+            .catch(() => this.initSubscription());
     }
     public in(data: GooglePubSubRequestData): Promise<any> {
         this.logger.info(`Publishing message ${data.data} to the ${this.topic} topic`);
@@ -43,17 +44,22 @@ export class GooglePubSub implements FuquOperations {
         );
     }
     public off(callback: FuquCallback<GooglePubSubMessage>) {
-        this.logger.info(`Trying to call subscription callback ${callback}`);
-        return this.googlePubSub.subscription(this.topic).on(`message`, callback);
+        this.logger.info('Trying to call subscription callback');
+        this.googlePubSub.subscription(this.topic).on(`message`, callback);
     }
-    private initTopic(): void {
+    private initTopic(): Promise<any> {
         this.logger.info(`Initializing the ${this.topic} topic`);
-        this.googlePubSub
-            .createTopic(this.topic);
+        return this.googlePubSub
+            .createTopic(this.topic)
+            .then(() => this.logger.info(`Topic ${this.topic} successfully created`))
+            .catch((error: Error) => this.logger.error(`Topic ${this.topic} was not created: ${error.message}`));
     }
-    private initSubscription(): void {
+    private initSubscription(): Promise<any> {
         this.logger.info(`Initializing the ${this.topic} subscription`);
-        this.googlePubSub
-            .createSubscription(this.topic, this.topic);
+        return this.googlePubSub
+            .topic(this.topic)
+            .createSubscription(this.topic)
+            .then(() => this.logger.info(`Subscription ${this.topic} successfully created`))
+            .catch((error: Error) => this.logger.error(`Subscription ${this.topic} was not created: ${error.message}`));
     }
 }
