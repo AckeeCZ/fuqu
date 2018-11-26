@@ -1,0 +1,23 @@
+{
+  "name": "fuqu",
+  "description": "Library used for manipulating with queues",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc -p .",
+    "lint": "tslint -p . --force"
+  },
+  "version": "0.1.0",
+  "author": "Stefan Prokop <stefan.prokop@ackee.cz>",
+  "license": "MIT",
+  "dependencies": {
+    "@google-cloud/pubsub": "^0.21.1",
+    "@types/node": "^10.11.4",
+    "@types/request": "^2.47.1",
+    "@types/request-promise": "^4.1.42",
+    "request": "^2.87.0",
+    "request-promise": "^4.2.2",
+    "tslint-config-ackee": "^0.1.1",
+    "typescript": "^3.1.6"
+  }
+}
