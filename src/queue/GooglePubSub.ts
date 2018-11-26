@@ -36,7 +36,7 @@ export class GooglePubSub implements FuquOperations {
             .catch(() => this.initSubscription());
     }
     public in(data: GooglePubSubRequestData): Promise<any> {
-        this.logger.info(`Publishing message ${data.data} to the ${this.topic} topic`);
+        this.logger.info(data.data, `Publishing message to the '${this.topic}' topic`);
         return Promise.resolve(this.googlePubSub
             .topic(this.topic)
             .publisher()
@@ -44,22 +44,23 @@ export class GooglePubSub implements FuquOperations {
         );
     }
     public off(callback: FuquCallback<GooglePubSubMessage>) {
-        this.logger.info('Trying to call subscription callback');
+        this.logger.info('Trying to register subscription callback');
         this.googlePubSub.subscription(this.topic).on(`message`, callback);
+        this.logger.info('Listening ... ready for fuq ...');
     }
     private initTopic(): Promise<any> {
-        this.logger.info(`Initializing the ${this.topic} topic`);
+        this.logger.info(`Initializing the '${this.topic}' topic`);
         return this.googlePubSub
             .createTopic(this.topic)
-            .then(() => this.logger.info(`Topic ${this.topic} successfully created`))
-            .catch((error: Error) => this.logger.error(`Topic ${this.topic} was not created: ${error.message}`));
+            .then(() => this.logger.info(`Topic '${this.topic}' successfully created`))
+            .catch((error: Error) => this.logger.error(`Topic '${this.topic}' was not created: ${error.message}`));
     }
     private initSubscription(): Promise<any> {
-        this.logger.info(`Initializing the ${this.topic} subscription`);
+        this.logger.info(`Initializing the '${this.topic}' subscription`);
         return this.googlePubSub
             .topic(this.topic)
             .createSubscription(this.topic)
-            .then(() => this.logger.info(`Subscription ${this.topic} successfully created`))
-            .catch((error: Error) => this.logger.error(`Subscription ${this.topic} was not created: ${error.message}`));
+            .then(() => this.logger.info(`Subscription '${this.topic}' successfully created`))
+            .catch((error: Error) => this.logger.error(`Subscription '${this.topic}' was not created: ${error.message}`));
     }
 }
