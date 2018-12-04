@@ -24,6 +24,7 @@ const fuq = new Fuqu(FuquType.googlePubSub, { // FuquType.custom
     topicName: ...,
  });
 fuq.off(message => { // register callback
+    const notificationObject = JSON.parse(message.data); // you need to parse JSON
     // do something
 });
 
