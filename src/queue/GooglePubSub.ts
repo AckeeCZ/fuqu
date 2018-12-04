@@ -41,7 +41,7 @@ export class GooglePubSub implements FuquOperations {
         try {
             (await this.topic)
                 .publisher()
-                .publish(Buffer.from(JSON.stringify(data.data)));
+                .publish(data.data);
             this.logger.info(data.data, `Message successfully published to the '${this.topicName}' topic`);
         } catch (e) {
             this.logger.error(data.data, `Message publishing to the '${this.topicName}' topic failed: ${e.message}`);

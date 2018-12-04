@@ -13,10 +13,11 @@ npm i --save fuqu
 ```typescript
 import { Fuqu, FuquType } from 'fuqu';
 
-const data = {
+// to google pubsub you need to send buffer
+const data = Buffer.from(JSON.stringify({
     message: 'Hello world!',
     messageId: 1,
-};
+}));
 
 const fuq = new Fuqu(FuquType.googlePubSub, { // FuquType.custom 
     keyFilename: ...,
@@ -24,7 +25,7 @@ const fuq = new Fuqu(FuquType.googlePubSub, { // FuquType.custom
     topicName: ...,
  });
 fuq.off(message => { // register callback
-    const notificationObject = JSON.parse(message.data); // you need to parse JSON
+    const myDataObject = JSON.parse(message.data);
     // do something
 });
 
