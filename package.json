@@ -7,7 +7,7 @@
     "build": "tsc -p .",
     "lint": "tslint -p . --force"
   },
-  "version": "0.2.1",
+  "version": "0.2.2",
   "author": "Stefan Prokop <stefan.prokop@ackee.cz>",
   "license": "MIT",
   "dependencies": {
