@@ -26,41 +26,51 @@ export interface GooglePubSubMessage extends FuquMessage {
 export class GooglePubSub implements FuquOperations {
     private googlePubSub: any;
     private logger: any;
-    private readonly topic: string;
+    private readonly topic: any;
+    private readonly subscription: any;
+    private readonly topicName: string;
     constructor(private options: GooglePubSubOptions) {
         this.googlePubSub = new PubSub(options);
         this.logger = options.logger || console;
-        this.topic = options.topicName;
-        this.initTopic()
-            .then(() => this.initSubscription())
-            .catch(() => this.initSubscription());
+        this.topicName = options.topicName;
+        this.topic = this.initTopic();
+        this.subscription = this.initSubscription();
     }
-    public in(data: GooglePubSubRequestData): Promise<any> {
-        this.logger.info(data.data, `Publishing message to the '${this.topic}' topic`);
-        return Promise.resolve(this.googlePubSub
-            .topic(this.topic)
-            .publisher()
-            .publish(Buffer.from(JSON.stringify(data.data)))
-        );
+    public async in(data: GooglePubSubRequestData): Promise<any> {
+        this.logger.info(data.data, `Publishing message to the '${this.topicName}' topic`);
+        try {
+            (await this.topic)
+                .publisher()
+                .publish(Buffer.from(JSON.stringify(data.data)));
+            this.logger.info(data.data, `Message successfully published to the '${this.topicName}' topic`);
+        } catch (e) {
+            this.logger.error(data.data, `Message publishing to the '${this.topicName}' topic failed: ${e.message}`);
+        }
     }
-    public off(callback: FuquCallback<GooglePubSubMessage>) {
-        this.logger.info('Trying to register subscription callback');
-        this.googlePubSub.subscription(this.topic).on(`message`, callback);
-        this.logger.info('Listening ... ready for fuq ...');
+    public async off(callback: FuquCallback<GooglePubSubMessage>) {
+        this.logger.info(`Trying to register subscription '${this.topicName}' callback`);
+        (await this.subscription).on(`message`, callback);
+        this.logger.info(`Listening on ${this.topicName} ... ready for fuq ...`);
     }
-    private initTopic(): Promise<any> {
-        this.logger.info(`Initializing the '${this.topic}' topic`);
-        return this.googlePubSub
-            .createTopic(this.topic)
-            .then(() => this.logger.info(`Topic '${this.topic}' successfully created`))
-            .catch((error: Error) => this.logger.error(`Topic '${this.topic}' was not created: ${error.message}`));
+    private async initTopic(): Promise<any> {
+        this.logger.info(`Initializing the '${this.topicName}' topic`);
+        try {
+            await this.googlePubSub
+                .createTopic(this.topicName);
+            this.logger.info(`Topic '${this.topicName}' successfully created`);
+        } catch (e) {
+            this.logger.error(`Topic '${this.topicName}' was not created: ${e.message}`);
+        }
+        return this.googlePubSub.topic(this.topicName);
     }
-    private initSubscription(): Promise<any> {
-        this.logger.info(`Initializing the '${this.topic}' subscription`);
-        return this.googlePubSub
-            .topic(this.topic)
-            .createSubscription(this.topic)
-            .then(() => this.logger.info(`Subscription '${this.topic}' successfully created`))
-            .catch((error: Error) => this.logger.error(`Subscription '${this.topic}' was not created: ${error.message}`));
+    private async initSubscription(): Promise<any> {
+        this.logger.info(`Initializing the '${this.topicName}' subscription`);
+        try {
+            (await this.topic).createSubscription(this.topicName);
+            this.logger.info(`Subscription '${this.topicName}' successfully created`);
+        } catch (e) {
+            this.logger.error(`Subscription '${this.topicName}' was not created: ${e.message}`);
+        }
+        return this.googlePubSub.subscription(this.topicName);
     }
 }
