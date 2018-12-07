@@ -3,7 +3,7 @@ import * as pubSub from './GooglePubSub';
 
 export type FuquOptions = pubSub.GooglePubSubOptions | object;
 
-export type FuquRequestData = pubSub.GooglePubSubRequestData | object;
+export type FuquRequestData = pubSub.GooglePubSubRequestData | any;
 
 export type FuquCallback<Message> = (message: Message) => void;
 

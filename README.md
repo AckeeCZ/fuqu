@@ -2,6 +2,8 @@
 
 Fuqu is tiny package for node backend development which is used for manipulating with queues.
 
+GitHub repository: [https://github.com/AckeeCZ/fuqu](https://github.com/AckeeCZ/fuqu)
+
 ## Install
 
 ```bash
@@ -13,11 +15,10 @@ npm i --save fuqu
 ```typescript
 import { Fuqu, FuquType } from 'fuqu';
 
-// to google pubsub you need to send buffer
-const data = Buffer.from(JSON.stringify({
+const data = {
     message: 'Hello world!',
     messageId: 1,
-}));
+};
 
 const fuq = new Fuqu(FuquType.googlePubSub, { // FuquType.custom 
     keyFilename: ...,
@@ -25,7 +26,7 @@ const fuq = new Fuqu(FuquType.googlePubSub, { // FuquType.custom
     topicName: ...,
  });
 fuq.off(message => { // register callback
-    const myDataObject = JSON.parse(message.data);
+    const myDataObject = message.data; // FuquMessage
     // do something
 });
 

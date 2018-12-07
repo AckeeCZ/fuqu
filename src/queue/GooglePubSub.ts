@@ -10,7 +10,7 @@ export interface GooglePubSubOptions {
 }
 
 export interface GooglePubSubRequestData {
-    data: Buffer;
+    data: string | object;
 }
 
 export interface GooglePubSubMessage extends FuquMessage {
@@ -40,15 +40,17 @@ export class GooglePubSub implements FuquOperations {
         try {
             (await this.topic)
                 .publisher()
-                .publish(data.data);
-            this.logger.info(data.data.toString(), `Message successfully published to the '${this.topicName}' topic`);
+                .publish(Buffer.from(JSON.stringify(data.data)));
+            this.logger.info(data.data, `Message successfully published to the '${this.topicName}' topic`);
         } catch (e) {
             this.logger.error(e, `Message publishing to the '${this.topicName}' topic failed: ${e.message}`);
         }
     }
     public async off(callback: FuquCallback<GooglePubSubMessage>) {
         this.logger.info(`Trying to register subscription '${this.topicName}' callback`);
-        (await this.subscription).on(`message`, callback);
+        (await this.subscription).on(`message`, (message: GooglePubSubMessage) => {
+            callback({ ...message, data: JSON.parse(message.data.toString()) }); // message.data is Buffer
+        });
         this.logger.info(`Listening on ${this.topicName} ... ready for fuq ...`);
     }
     private async initTopic(): Promise<any> {
