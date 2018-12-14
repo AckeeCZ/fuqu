@@ -10,6 +10,11 @@ GitHub repository: [https://github.com/AckeeCZ/fuqu](https://github.com/AckeeCZ/
 npm i --save fuqu
 ```
 
+## Supports
+
+- Google PubSub
+- Your custom solution which implements `FuquOperations`
+
 ## Usage
 
 ```typescript
