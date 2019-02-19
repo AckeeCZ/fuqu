@@ -1,8 +1,11 @@
 
 import { PubSub, Subscription, Topic } from '@google-cloud/pubsub';
-import { FuquCallback, FuquMessage, FuquOperations } from './Fuqu';
+import { FuquBaseOptions, FuquCallback, FuquMessage, FuquOperations } from './Fuqu';
 
-export interface GooglePubSubOptions {
+// https://cloud.google.com/nodejs/docs/reference/pubsub/0.23.x/Subscription
+const defaultMaxMessages = 100; // By default Subscription objects allow you to process 100 messages at the same time
+
+export interface GooglePubSubOptions extends FuquBaseOptions {
     logger?: any;
     projectId: string;
     keyFilename: string;
@@ -33,7 +36,7 @@ export class GooglePubSub implements FuquOperations {
         this.logger = options.logger || console;
         this.topicName = options.topicName;
         this.topic = this.initTopic();
-        this.subscription = this.initSubscription();
+        this.subscription = this.initSubscription(GooglePubSub.getSubscriptionOptions(options));
     }
     public async in(data: GooglePubSubRequestData): Promise<any> {
         this.logger.info(data.data, `Publishing message to the '${this.topicName}' topic`);
@@ -63,7 +66,7 @@ export class GooglePubSub implements FuquOperations {
         }
         return (await this.googlePubSub).topic(this.topicName);
     }
-    private async initSubscription(): Promise<any> {
+    private async initSubscription(subscriptionOptions = {}): Promise<any> {
         this.logger.info(`Initializing the '${this.topicName}' subscription`);
         try {
             await (await this.topic).createSubscription(this.topicName, {});
@@ -71,6 +74,16 @@ export class GooglePubSub implements FuquOperations {
         } catch (e) {
             this.logger.error(e, `Subscription '${this.topicName}' was not created: ${e.message}`);
         }
-        return (await this.googlePubSub).subscription(this.topicName);
+        return (await this.googlePubSub).subscription(this.topicName, subscriptionOptions);
+    }
+    private static getSubscriptionOptions(queueOptions: FuquBaseOptions | undefined) {
+        if (!queueOptions || !queueOptions.queue) {
+            return {};
+        }
+        return {
+            flowControl: {
+                maxMessages: queueOptions.queue.maxMessages || defaultMaxMessages,
+            },
+        };
     }
 }
