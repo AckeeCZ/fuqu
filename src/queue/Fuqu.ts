@@ -1,7 +1,7 @@
 
 import * as pubSub from './GooglePubSub';
 
-export type FuquOptions = pubSub.GooglePubSubOptions | object;
+export type FuquOptions = pubSub.GooglePubSubOptions | any;
 
 export type FuquRequestData = pubSub.GooglePubSubRequestData | any;
 
@@ -19,6 +19,12 @@ export interface FuquMessage {
     nack(): void;
 }
 
+export interface FuquBaseOptions {
+    queue?: {
+        maxMessages?: number;
+    };
+}
+
 export enum FuquType {
     custom = 'custom',
     googlePubSub = 'googlePubSub',
@@ -29,7 +35,7 @@ export class Fuqu<Message extends FuquMessage = FuquMessage> implements FuquOper
     constructor(private type: FuquType, private options: FuquOptions, private adapter?: string) {
         switch (type) {
             case FuquType.googlePubSub:
-                this.instance = new pubSub.GooglePubSub(options as pubSub.GooglePubSubOptions);
+                this.instance = new pubSub.GooglePubSub(options);
                 break;
             case FuquType.custom:
                 if (!this.adapter) {
