@@ -41,9 +41,11 @@ export class GooglePubSub implements FuquOperations {
     public async in(data: GooglePubSubRequestData): Promise<any> {
         this.logger.info(data.data, `Publishing message to the '${this.topicName}' topic`);
         try {
-            (await this.topic)
-                .publisher()
-                .publish(Buffer.from(JSON.stringify(data.data)));
+            typeof data.data === 'string'
+                ? (await this.topic)
+                    .publish(Buffer.from(JSON.stringify(data.data)))
+                : (await this.topic)
+                    .publishJSON(data.data);
             this.logger.info(data.data, `Message successfully published to the '${this.topicName}' topic`);
         } catch (e) {
             this.logger.error(e, `Message publishing to the '${this.topicName}' topic failed: ${e.message}`);
