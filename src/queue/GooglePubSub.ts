@@ -1,6 +1,6 @@
 
-import { PubSub, Subscription, Topic } from '@google-cloud/pubsub';
-import { FuquBaseOptions, FuquCallback, FuquMessage, FuquOperations } from './Fuqu';
+import { Message, PubSub, Subscription, Topic } from '@google-cloud/pubsub';
+import { FuquBaseOptions, FuquCallback, FuquOperations } from './Fuqu';
 
 // https://cloud.google.com/nodejs/docs/reference/pubsub/0.23.x/Subscription
 const defaultMaxMessages = 100; // By default Subscription objects allow you to process 100 messages at the same time
@@ -16,16 +16,9 @@ export interface GooglePubSubRequestData {
     data: string | object;
 }
 
-export interface GooglePubSubMessage extends FuquMessage {
-    ackId?: string;
-    attributes?: object;
-    connectionId?: string;
-    length?: number;
-    publishTime?: Date;
-    received?: number;
-}
+export type PubSubMessage = Message;
 
-export class GooglePubSub implements FuquOperations {
+export class GooglePubSub implements FuquOperations<PubSubMessage> {
     private googlePubSub: PubSub;
     private logger: any;
     private readonly topic: Promise<Topic>;
@@ -51,10 +44,16 @@ export class GooglePubSub implements FuquOperations {
             this.logger.error(e, `Message publishing to the '${this.topicName}' topic failed: ${e.message}`);
         }
     }
-    public async off(callback: FuquCallback<GooglePubSubMessage>) {
+    public async off(cb: FuquCallback<PubSubMessage>) {
         this.logger.info(`Trying to register subscription '${this.topicName}' callback`);
-        (await this.subscription).on(`message`, (message: GooglePubSubMessage) => {
-            callback({ ...message, data: JSON.parse(message.data.toString()) }); // message.data is Buffer
+        (await this.subscription).on(`message`, (message: PubSubMessage) => {
+            cb({
+                id: message.id,
+                data: JSON.parse(message.data.toString()),
+                ack: () => message.ack(),
+                nack: () => message.nack(),
+                original: message,
+            });
         });
         this.logger.info(`Listening on ${this.topicName} ... ready for fuq ...`);
     }
