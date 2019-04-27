@@ -1,8 +1,14 @@
-# Fuqu
+<div align="center">
+
 
 [![Build Status](https://travis-ci.org/AckeeCZ/fuqu.svg?branch=master)](https://travis-ci.org/AckeeCZ/fuqu)
 [![Npm](https://img.shields.io/npm/v/fuqu.svg?style=flat-square)](https://www.npmjs.com/package/fuqu)
 [![License](https://img.shields.io/github/license/AckeeCZ/fuqu.svg?style=flat-square)](https://github.com/AckeeCZ/fuqu/blob/master/LICENSE)
+
+<img src="./resources/logo.png" height="170"/>
+</div>
+
+# Fuqu
 
 Fuqu is tiny package for node backend development which is used for manipulating with queues.
 
