@@ -1,10 +1,6 @@
 
 import * as pubSub from './GooglePubSub';
 
-export type FuquOptions = pubSub.GooglePubSubOptions | any;
-
-export type FuquRequestData = pubSub.GooglePubSubRequestData | any;
-
 export interface FuquOperations<D, O> {
     in(data: D): any;
     off(callback: (msg: FuquMessage<D, O>) => void): any;
@@ -33,9 +29,13 @@ export type OriginalMessage<Type extends FuquType> = Type extends FuquType.googl
     ? pubSub.OriginalMessage
     : any;
 
+export type FuquOptions<Type extends FuquType> = Type extends FuquType.googlePubSub
+    ? pubSub.GooglePubSubOptions
+    : any;
+
 export class Fuqu<T extends FuquType, D extends object, O extends OriginalMessage<any> = OriginalMessage<T>> implements FuquOperations<D, O> {
     private instance: FuquOperations<D, O>;
-    constructor(private type: T, private options: FuquOptions, private adapter?: string) {
+    constructor(private type: T, private options: FuquOptions<T>, private adapter?: string) {
         switch (type) {
             case FuquType.googlePubSub:
                 // Hotfix types :((
