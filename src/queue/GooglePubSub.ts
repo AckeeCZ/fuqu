@@ -62,19 +62,18 @@ export class GooglePubSub<D extends object> implements FuquOperations<D, PubSubM
         const [topic] = await (await this.googlePubSub).topic(this.topicName).get({ autoCreate: true });
         return topic;
     }
-    private async initSubscription(subscriptionOptions = {}) {
+    private async initSubscription(subscriptionOptions?: SubscriptionOptions) {
         this.logger.info(`Initializing the '${this.topicName}' subscription`);
         const [subscription] = await (await this.topic).subscription(this.topicName, subscriptionOptions).get({ autoCreate: true });
         return subscription;
     }
-    private static getSubscriptionOptions(queueOptions: FuquBaseOptions | undefined) {
-        if (!queueOptions || !queueOptions.queue) {
-            return {};
+    private static getSubscriptionOptions(queueOptions?: FuquBaseOptions) {
+        if (queueOptions && queueOptions.queue) {
+            return {
+                flowControl: {
+                    maxMessages: queueOptions.queue.maxMessages || defaultMaxMessages,
+                },
+            }
         }
-        return {
-            flowControl: {
-                maxMessages: queueOptions.queue.maxMessages || defaultMaxMessages,
-            },
-        };
     }
 }
