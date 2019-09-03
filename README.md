@@ -47,7 +47,7 @@ fuq.off(message => { // register callback
 
 ...
 
-return fuq.in({ data }) // Promise<any>
+return fuq.in(data) // Promise<any>
     .then(() => {
         console.log(`Successfully pushed to queue!`)
     });
