@@ -57,25 +57,15 @@ export class GooglePubSub implements FuquOperations<PubSubMessage> {
         });
         this.logger.info(`Listening on ${this.topicName} ... ready for fuq ...`);
     }
-    private async initTopic(): Promise<any> {
+    private async initTopic() {
         this.logger.info(`Initializing the '${this.topicName}' topic`);
-        try {
-            await this.googlePubSub.createTopic(this.topicName, {});
-            this.logger.info(`Topic '${this.topicName}' successfully created`);
-        } catch (e) {
-            this.logger.error(e, `Topic '${this.topicName}' was not created: ${e.message}`);
-        }
-        return (await this.googlePubSub).topic(this.topicName);
+        const [topic] = await (await this.googlePubSub).topic(this.topicName).get({ autoCreate: true });
+        return topic;
     }
-    private async initSubscription(subscriptionOptions = {}): Promise<any> {
+    private async initSubscription(subscriptionOptions = {}) {
         this.logger.info(`Initializing the '${this.topicName}' subscription`);
-        try {
-            await (await this.topic).createSubscription(this.topicName, {});
-            this.logger.info(`Subscription '${this.topicName}' successfully created`);
-        } catch (e) {
-            this.logger.error(e, `Subscription '${this.topicName}' was not created: ${e.message}`);
-        }
-        return (await this.googlePubSub).subscription(this.topicName, subscriptionOptions);
+        const [subscription] = await (await this.topic).subscription(this.topicName, subscriptionOptions).get({ autoCreate: true });
+        return subscription;
     }
     private static getSubscriptionOptions(queueOptions: FuquBaseOptions | undefined) {
         if (!queueOptions || !queueOptions.queue) {
