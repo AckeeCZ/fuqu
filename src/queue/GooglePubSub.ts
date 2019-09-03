@@ -57,12 +57,12 @@ export class GooglePubSub implements FuquOperations<PubSubMessage> {
         });
         this.logger.info(`Listening on ${this.topicName} ... ready for fuq ...`);
     }
-    private async initTopic(): Promise<any> {
+    private async initTopic() {
         this.logger.info(`Initializing the '${this.topicName}' topic`);
         const [topic] = await (await this.googlePubSub).topic(this.topicName).get({ autoCreate: true });
         return topic;
     }
-    private async initSubscription(subscriptionOptions = {}): Promise<any> {
+    private async initSubscription(subscriptionOptions = {}) {
         this.logger.info(`Initializing the '${this.topicName}' subscription`);
         const [subscription] = await (await this.topic).subscription(this.topicName, subscriptionOptions).get({ autoCreate: true });
         return subscription;
