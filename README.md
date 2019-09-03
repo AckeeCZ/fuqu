@@ -52,6 +52,29 @@ return fuq.in(data) // Promise<any>
         console.log(`Successfully pushed to queue!`)
     });
 ```
+
+### Typesafe usage
+
+```typescript
+import { Fuqu, FuquType } from 'fuqu';
+
+interface MyMessage {
+    code: number;
+    message: string;
+    wothReading: bool;
+}
+// Add types (unfortunatelly, you nead to reapeat the type in first arg)
+const fuq = new Fuqu<typeof FuquType.googlePubSub, MyMessage>(...);
+fuq.off(msg => {
+    msg.data // MyMessage
+    msg.original // Message (from PubSub)
+});
+fuq.in({ code: 2, message: 'yo', wothReading: false }); // OK
+fuq.in({ kabooM: '!' }); // Error: Missing `code`, ...
+
+```
+
+
 ## License
 
 This project is licensed under [MIT](./LICENSE).
