@@ -14,7 +14,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@google-cloud/pubsub": "^0.28.1",
+    "@google-cloud/pubsub": "^0.31.1",
     "@types/node": "^10.11.4",
     "@types/request": "^2.47.1",
     "@types/request-promise": "^4.1.42",
