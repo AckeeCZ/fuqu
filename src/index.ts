@@ -1,10 +1,4 @@
-
-import {
+export {
     Fuqu,
     FuquType,
 } from './queue/Fuqu';
-
-export = {
-    Fuqu,
-    FuquType,
-};

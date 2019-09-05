@@ -1,23 +1,17 @@
 
 import * as pubSub from './GooglePubSub';
 
-export type FuquOptions = pubSub.GooglePubSubOptions | any;
-
-export type FuquRequestData = pubSub.GooglePubSubRequestData | any;
-
-export type FuquCallback<M> = (message: FuquMessage<M>) => void;
-
-export interface FuquOperations<M> {
-    in(data: any): any;
-    off(callback: FuquCallback<M>): any;
+export interface FuquOperations<D, O> {
+    in(data: D): any;
+    off(callback: (msg: FuquMessage<D, O>) => void): any;
 }
 
-export interface FuquMessage<T> {
+export interface FuquMessage<D, O> {
     id: string;
-    data: any;
+    data: D;
     ack(): void;
     nack(): void;
-    original: T;
+    original: O;
 }
 
 export interface FuquBaseOptions {
@@ -31,13 +25,17 @@ export enum FuquType {
     googlePubSub = 'googlePubSub',
 }
 
-export type Message<Type extends FuquType> = Type extends FuquType.googlePubSub
-    ? pubSub.PubSubMessage
+export type OriginalMessage<Type extends FuquType> = Type extends FuquType.googlePubSub
+    ? pubSub.OriginalMessage
     : any;
 
-export class Fuqu<Type extends FuquType> implements FuquOperations<Message<Type>> {
-    private instance: FuquOperations<Message<Type>>;
-    constructor(private type: Type, private options: FuquOptions, private adapter?: string) {
+export type FuquOptions<Type extends FuquType> = Type extends FuquType.googlePubSub
+    ? pubSub.GooglePubSubOptions
+    : any;
+
+export class Fuqu<T extends FuquType, D extends object, O extends OriginalMessage<any> = OriginalMessage<T>> implements FuquOperations<D, O> {
+    private instance: FuquOperations<D, O>;
+    constructor(private type: T, private options: FuquOptions<T>, private adapter?: string) {
         switch (type) {
             case FuquType.googlePubSub:
                 // Hotfix types :((
@@ -54,10 +52,10 @@ export class Fuqu<Type extends FuquType> implements FuquOperations<Message<Type>
                 throw new Error(`Unsupported type ${type}`);
         }
     }
-    public in(data: FuquRequestData): any {
+    public in: FuquOperations<D, O>['in'] = data => {
         return this.instance.in(data);
     }
-    public off(callback: FuquCallback<Message<Type>>): any {
-        return this.instance.off(callback);
+    public off: FuquOperations<D, O>['off'] = cb => {
+        return this.instance.off(cb);
     }
 }
