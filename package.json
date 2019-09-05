@@ -21,6 +21,6 @@
     "request": "^2.87.0",
     "request-promise": "^4.2.2",
     "tslint-config-ackee": "^0.1.1",
-    "typescript": "^3.1.6"
+    "typescript": "^3.6.2"
   }
 }
