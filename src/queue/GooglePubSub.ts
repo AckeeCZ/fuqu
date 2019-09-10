@@ -1,14 +1,13 @@
 
 import { Message as PubSubMessage, PubSub, Subscription, Topic, SubscriptionOptions } from '@google-cloud/pubsub';
 import { FuquBaseOptions, FuquOperations } from './Fuqu';
+import { ClientConfig } from '@google-cloud/pubsub/build/src/pubsub';
 
 // https://cloud.google.com/nodejs/docs/reference/pubsub/0.23.x/Subscription
 const defaultMaxMessages = 100; // By default Subscription objects allow you to process 100 messages at the same time
 
-export interface GooglePubSubOptions extends FuquBaseOptions {
+export interface GooglePubSubOptions extends FuquBaseOptions, ClientConfig {
     logger?: any;
-    projectId: string;
-    keyFilename: string;
     topicName: string;
 }
 
