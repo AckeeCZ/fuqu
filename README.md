@@ -10,7 +10,7 @@
 
 # Fuqu
 
-Fuqu is tiny package for node backend development which is used for manipulating with queues.
+Fuqu _([/fʌkjuː/](https://en.wikipedia.org/wiki/Help:IPA/English))_ is tiny package for node backend development which is used for manipulating with queues.
 
 GitHub repository: [https://github.com/AckeeCZ/fuqu](https://github.com/AckeeCZ/fuqu)
 
