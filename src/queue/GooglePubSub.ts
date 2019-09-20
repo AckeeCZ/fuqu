@@ -70,6 +70,7 @@ export class GooglePubSub<D extends object> implements FuquOperations<D, PubSubM
         if (queueOptions && queueOptions.queue) {
             return {
                 flowControl: {
+                    allowExcessMessages: false,
                     maxMessages: queueOptions.queue.maxMessages || defaultMaxMessages,
                 },
             }
