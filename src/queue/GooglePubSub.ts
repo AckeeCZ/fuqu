@@ -10,7 +10,6 @@ const defaultMaxMessages = 100; // By default Subscription objects allow you to 
 
 export interface GooglePubSubOptions extends FuquBaseOptions, ClientConfig {
     logger?: any;
-    debug?: boolean;
     topicName: string;
 }
 
@@ -26,11 +25,9 @@ export class GooglePubSub<D extends object> implements FuquOperations<D, PubSubM
     private readonly topic: Promise<Topic>;
     private readonly subscription: Promise<Subscription>;
     private readonly topicName: string;
-    private readonly debug: boolean;
     constructor(options: GooglePubSubOptions) {
         this.googlePubSub = new PubSub(options);
         this.logger = options.logger || console;
-        this.debug = !!options.debug;
         this.topicName = options.topicName;
         this.topic = this.initTopic();
         this.subscription = this.initSubscription(GooglePubSub.getSubscriptionOptions(options));
