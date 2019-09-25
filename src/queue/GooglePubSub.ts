@@ -45,7 +45,7 @@ export class GooglePubSub<D extends object> implements FuquOperations<D, PubSubM
                     .publishJSON(data);
             log(`Message successfully published to the '${this.topicName}' topic`, data);
         } catch (e) {
-            log(`Message publishing to the '${this.topicName}' topic failed: ${e.message}`, e);
+            this.logger.error(e, `Message publishing to the '${this.topicName}' topic failed: ${e.message}`);
         }
     }
     public off: FuquOperations<D, PubSubMessage>['off'] = async cb => {
