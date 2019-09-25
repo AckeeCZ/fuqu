@@ -76,16 +76,7 @@ fuq.in({ kabooM: '!' }); // Error: Missing `code`, ...
 ```
 
 ## Debugging
-Pubsub implementation allows debug mode with debug logs. You can enable debug mode with
-`debug` in `options`
-
-```typescript
-const fuq = new Fuqu(FuquType.googlePubSub, {
-    logger: customLogger,
-    debug: true,
-    // ...
-})
-```
+Pubsub implementation allows debug mode with debug logs, you need to set `NODE_DEBUG` variable to `fuqu_pubsub`.
 
 ## License
 
