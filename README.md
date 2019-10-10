@@ -76,7 +76,7 @@ fuq.in({ kabooM: '!' }); // Error: Missing `code`, ...
 ```
 
 ## Debugging
-Pubsub implementation allows debug mode with debug logs, you need to set `NODE_DEBUG` variable to `fuqu_pubsub`.
+Pubsub implementation allows debug mode with debug logs, you need to set `NODE_DEBUG` variable to `fuqu`.
 
 ## License
 
