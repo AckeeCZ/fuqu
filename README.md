@@ -78,6 +78,12 @@ fuq.in({ kabooM: '!' }); // Error: Missing `code`, ...
 ## Debugging
 Pubsub implementation allows debug mode with debug logs, you need to set `NODE_DEBUG` variable to `fuqu`.
 
+## Testing
+
+```
+docker run --rm -ti -p 8681:8681 messagebird/gcloud-pubsub-emulator:latest
+```
+
 ## License
 
 This project is licensed under [MIT](./LICENSE).

@@ -3,7 +3,7 @@
   "description": "Library used for manipulating with queues",
   "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest --detectOpenHandles --verbose",
     "build": "tsc -p .",
     "lint": "tslint -p . --force"
   },
@@ -14,13 +14,12 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@google-cloud/pubsub": "^0.30.2",
-    "@types/node": "^10.11.4",
-    "@types/request": "^2.47.1",
-    "@types/request-promise": "^4.1.42",
-    "request": "^2.87.0",
-    "request-promise": "^4.2.2",
-    "tslint-config-ackee": "^0.1.1",
-    "typescript": "^3.1.6"
+    "@google-cloud/pubsub": "^1.6.0",
+    "@types/jest": "^25.1.4",
+    "jest": "^25.1.0",
+    "prettier-config-ackee": "0.0.13",
+    "ts-jest": "^25.2.1",
+    "tslint-config-ackee": "^0.3.0",
+    "typescript": "^3.8.3"
   }
 }
