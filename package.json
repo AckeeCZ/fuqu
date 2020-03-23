@@ -3,7 +3,7 @@
   "description": "Library used for manipulating with queues",
   "main": "dist/index.js",
   "scripts": {
-    "test": "jest --detectOpenHandles --verbose",
+    "test": "jest --detectOpenHandles --verbose --runInBand",
     "build": "tsc -p .",
     "lint": "tslint -p . --force"
   },
@@ -15,7 +15,9 @@
   "license": "MIT",
   "dependencies": {
     "@google-cloud/pubsub": "^1.6.0",
+    "@types/amqplib": "^0.5.13",
     "@types/jest": "^25.1.4",
+    "amqplib": "^0.5.5",
     "jest": "^25.1.0",
     "prettier-config-ackee": "0.0.13",
     "ts-jest": "^25.2.1",

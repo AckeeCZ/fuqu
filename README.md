@@ -81,7 +81,8 @@ Pubsub implementation allows debug mode with debug logs, you need to set `NODE_D
 ## Testing
 
 ```
-docker run --rm -ti -p 8681:8681 messagebird/gcloud-pubsub-emulator:latest
+docker run --rm -it -p 8681:8681 messagebird/gcloud-pubsub-emulator:latest
+docker run --rm -it -p 5672:5672 --hostname localhost rabbitmq:3
 ```
 
 ## License
