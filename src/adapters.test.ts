@@ -1,6 +1,6 @@
 import { PubSub } from '@google-cloud/pubsub';
 import { createPubsubAdapter } from './queue/pubsub';
-import { Event, FuQuOptions, FuQu } from './fuqu';
+import { Event, FuQuOptions, FuQu, FinishedMessageMetadata, IncomingMessageMetadata } from './fuqu';
 import { connect } from 'amqplib';
 import { createRabbitAdapter } from './queue/rabbit';
 
@@ -36,7 +36,7 @@ for (let adapter of adapters) {
             beforeAll(adapter.beforeAll);
             test('Publishes message and receives it in handler', async () => {
                 const msg = { foo: new Date().getTime() };
-                const fuq = await adapter.createFuQu<{ foo: number }, any>('fuqu1');
+                const fuq = await adapter.createFuQu<{ foo: number }, any>('fuqu-ack');
                 await new Promise(async resolve => {
                     await fuq.subscribe(x => {
                         expect(x).toStrictEqual(msg);
@@ -46,19 +46,37 @@ for (let adapter of adapters) {
                 });
                 await fuq.close();
             });
+            test('Nack message comes back', async () => {
+                const msg = { foo: new Date().getTime() };
+                const fuq = await adapter.createFuQu<{ foo: number }, any>('fuqu-nack');
+                const handler = jest.fn()
+                await new Promise(async resolve => {
+                    handler.mockRejectedValueOnce(new Error()).mockImplementationOnce(resolve)
+                    await fuq.subscribe(handler);
+                    await fuq.publish(msg);
+                });
+                await fuq.close();
+                expect(handler).toBeCalledTimes(2);
+            });
             test('Is alive after initialization, is not on close', async () => {
-                const fuq = await adapter.createFuQu('fuqu2');
+                const fuq = await adapter.createFuQu('fuqu-alive');
                 await fuq.subscribe(() => {});
                 expect(await fuq.isAlive()).toBe(true);
                 await fuq.close();
                 expect(await fuq.isAlive()).toBe(false);
+            });
+            test('Faster timeout on isAlive wins (dangerous test)', async () => {
+                const fuq = await adapter.createFuQu('fuqu-timeout');
+                // expect health check to take more than 0 ms
+                expect(await fuq.isAlive(0)).toBe(false);
+                await fuq.close().catch();
             });
             describe('Logs events', () => {
                 const message = { hello: 'world' };
                 const attributes = { version: '1' };
                 const events: Event<any, any>[] = [];
                 beforeAll(async () => {
-                    const fuq = await adapter.createFuQu('fuqu3', { eventLogger: e => events.push(e) });
+                    const fuq = await adapter.createFuQu('fuqu-events', { eventLogger: e => events.push(e) });
                     await new Promise(async resolve => {
                         await fuq.subscribe(resolve);
                         fuq.publish(message, attributes);
@@ -80,27 +98,36 @@ for (let adapter of adapters) {
                     expect(events.map(e => e.action)).toStrictEqual(expectedEvents);
                 });
                 test('All have correct topicName', () => {
-                    expect(events.every(e => e.topicName === 'fuqu3')).toBe(true);
+                    expect(events.every(e => e.topicName === 'fuqu-events')).toBe(true);
                 });
                 test('Create has options', () => {
                     const create = events.find(e => e.action === 'create');
                     expect(create).toHaveProperty(['options', 'eventLogger']);
                 });
                 test('Payload, attributes, times match', () => {
-                    const publish = events.find(e => e.action === 'publish')!;
-                    const receive = events.find(e => e.action === 'receive')!;
-                    const ack = events.find(e => e.action === 'ack')!;
+                    const publish = events.find(e => e.action === 'publish')! as IncomingMessageMetadata<any, any>;
+                    const receive = events.find(e => e.action === 'receive')! as FinishedMessageMetadata<any, any>;
+                    const ack = events.find(e => e.action === 'ack')! as FinishedMessageMetadata<any, any>;
                     // payloads and attributes match
-                    [publish, receive, ack].forEach((e: any) => expect(e.payload).toStrictEqual(message));
-                    [publish, receive, ack].forEach((e: any) => expect(e.attributes).toStrictEqual(attributes));
+                    [publish, receive, ack].forEach(e => expect(e.payload).toStrictEqual(message));
+                    [publish, receive, ack].forEach(e => expect(e.attributes).toStrictEqual(attributes));
                     // times match
-                    expect(uniq([receive, ack].map((e: any) => e.published))).toHaveLength(1);
-                    expect(uniq([receive, ack].map((e: any) => e.received))).toHaveLength(1);
+                    expect(uniq([receive, ack].map(e => e.publishTime))).toHaveLength(1);
+                    expect(uniq([receive, ack].map(e => e.receiveTime))).toHaveLength(1);
                 });
-                test.todo('Published < Received < Finished');
-                test.todo('Finished in > 0');
-                test.todo('Processed in > 0');
+                test('Times align: publishTime < receiveTime < finishTime', () => {
+                    const ack = events.find(e => e.action === 'ack')! as FinishedMessageMetadata<any, any>;
+                    expect(ack.publishTime.getTime()).toBeLessThanOrEqual(ack.receiveTime.getTime())
+                    expect(ack.receiveTime.getTime()).toBeLessThanOrEqual(ack.finishTime.getTime())
+                });
+                test('Durations positive and align: processDuration < totalDuration', () => {
+                    const ack = events.find(e => e.action === 'ack')! as FinishedMessageMetadata<any, any>;
+                    expect(ack.processDurationMillis).toBeLessThanOrEqual(ack.totalDurationMillis);
+                    expect(ack.processDurationMillis).toBeGreaterThanOrEqual(0);
+                });
                 test.todo('Types match');
+                test.todo('Can send/receive large batch');
+                test.todo('Supports maxMessages flow control');
             });
         });
     });

@@ -36,32 +36,31 @@ export const createRabbitAdapter: FuQuCreator<FuQuRabbitOptions, Message> = (
             },
             publishJson: async (payload, attributes) => {
                 const channel = await getChannel();
-                channel.sendToQueue(topicName, Buffer.from(JSON.stringify(payload)), { headers: attributes });
+                channel.sendToQueue(topicName, Buffer.from(JSON.stringify(payload)), { headers: attributes, timestamp: Date.now() });
             },
             registerHandler: async handler => {
                 const channel = await getChannel();
                 channel.consume(topicName, async message => {
                     if (!message) return;
                     const payload = JSON.parse(message.content.toString());
-                    await handler(payload, message);
+                    await handler(payload, message.properties.headers as any, message);
                 });
             },
             ack: msg => getChannel().then(channel => channel.ack(msg)),
             nack: msg => getChannel().then(channel => channel.nack(msg)),
             createIncomingMessageMetadata: (message, payload) => ({
                 payload,
-                published: new Date(message.properties.timestamp),
-                received: new Date(),
-                deliveryAttempt: 0, // TODO
+                publishTime: new Date(message.properties.timestamp),
+                receiveTime: new Date(),
                 attributes: message.properties.headers as any,
             }),
             createFinishedMessageMetadata: (message, incomingMetadata) => {
                 const finished = new Date();
                 return {
                     ...incomingMetadata,
-                    finished,
-                    publishToFinish: finished.getTime() - incomingMetadata.published.getTime(),
-                    receivedToFinish: finished.getTime() - incomingMetadata.received.getTime(),
+                    finishTime: finished,
+                    totalDurationMillis: finished.getTime() - incomingMetadata.publishTime.getTime(),
+                    processDurationMillis: finished.getTime() - incomingMetadata.receiveTime.getTime(),
                 };
             },
         },

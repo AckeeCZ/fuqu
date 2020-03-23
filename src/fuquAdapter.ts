@@ -11,7 +11,7 @@ export type FuQuCreator<O extends FuQuOptions<any, any>, Message> = <
 
 interface FuQuAdapter<P, A, M> {
     publishJson: (payload: P, attributes?: A) => Promise<void>;
-    registerHandler: (handler: Handler<P, M>) => Promise<void> | void;
+    registerHandler: (handler: Handler<P, A, M>) => Promise<void> | void;
     ack: (message: M) => Promise<void> | void;
     nack: (message: M) => Promise<void> | void;
     close: () => Promise<void>;
@@ -36,7 +36,7 @@ export const createFuQu = <P, A, M>(
         },
         subscribe: async handler => {
             options?.eventLogger?.({ topicName, action: 'subscribe', handler: handler.name });
-            const wrappedHandler: typeof handler = async (payload, message) => {
+            const wrappedHandler: typeof handler = async (payload, attributes, message) => {
                 const incomingMetadata = defs.createIncomingMessageMetadata(message, payload);
                 try {
                     options?.eventLogger?.({
@@ -44,7 +44,7 @@ export const createFuQu = <P, A, M>(
                         action: 'receive',
                         ...incomingMetadata,
                     }),
-                        await handler(payload, message);
+                        await handler(payload, attributes, message);
                     await defs.ack(message);
                     options?.eventLogger?.({
                         topicName,

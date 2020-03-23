@@ -31,25 +31,24 @@ export const createPubsubAdapter: FuQuCreator<FuQuPubSubOptions, Message> = (pub
                 const sub = await subscription;
                 sub.on('message', async (message: Message) => {
                     const payload = JSON.parse(message.data.toString());
-                    await handler(payload, message);
+                    await handler(payload, message.attributes as any, message);
                 });
             },
             ack: msg => msg.ack(),
             nack: msg => msg.nack(),
             createIncomingMessageMetadata: (message, payload) => ({
                 payload,
-                published: new Date(message.publishTime.getTime()),
-                received: new Date(message.received),
-                deliveryAttempt: message.deliveryAttempt,
+                publishTime: new Date(message.publishTime.getTime()),
+                receiveTime: new Date(message.received),
                 attributes: message.attributes as any,
             }),
             createFinishedMessageMetadata: (message, incomingMetadata) => {
                 const finished = new Date();
                 return {
                     ...incomingMetadata,
-                    finished,
-                    publishToFinish: finished.getTime() - incomingMetadata.published.getTime(),
-                    receivedToFinish: finished.getTime() - incomingMetadata.received.getTime(),
+                    finishTime: finished,
+                    totalDurationMillis: finished.getTime() - incomingMetadata.publishTime.getTime(),
+                    processDurationMillis: finished.getTime() - incomingMetadata.receiveTime.getTime(),
                 };
             },
         },

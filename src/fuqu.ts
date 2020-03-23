@@ -7,14 +7,15 @@ export type MessageData<P, A> = {
     attributes?: A;
 };
 export type IncomingMessageMetadata<P, A> = MessageData<P, A> & {
-    published: Date;
-    deliveryAttempt: number;
-    received: Date;
+    publishTime: Date;
+    receiveTime: Date;
 };
 export type FinishedMessageMetadata<P, A> = IncomingMessageMetadata<P, A> & {
-    finished: Date;
-    publishToFinish: number;
-    receivedToFinish: number;
+    finishTime: Date;
+    // Duration from publish to finish
+    totalDurationMillis: number;
+    // Duration from receive to finish
+    processDurationMillis: number;
 };
 
 export type Event<P, A> = { topicName: string } & (
@@ -35,7 +36,7 @@ export type Event<P, A> = { topicName: string } & (
       })
 );
 
-export type Handler<P, M> = (data: P, message: M) => Promise<void> | void;
+export type Handler<P, A, M> = (data: P, attributes: A, message: M) => Promise<void> | void;
 
 export interface FuQu<P, A, M> {
     /**
@@ -51,7 +52,7 @@ export interface FuQu<P, A, M> {
      * an error inside the handler results in nack-ing the message. The
      * handler is awaited to respond to errors but result value ignored.
      */
-    subscribe: (handler: Handler<P, M>) => Promise<void>;
+    subscribe: (handler: Handler<P, A, M>) => Promise<void>;
     /**
      * Test if connection is alive (check if subscription exists)
      * @param timeoutMs Timeout to wait for the response
