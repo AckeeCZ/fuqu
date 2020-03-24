@@ -4,7 +4,7 @@ import { FuQuOptions } from '../fuqu';
 
 interface FuQuRabbitOptions extends FuQuOptions {}
 
-export const createRabbitAdapter: FuQuCreator<FuQuRabbitOptions, Message> = (
+export const fuQuRabbit: FuQuCreator<FuQuRabbitOptions, Message> = (
     connection: Connection,
     topicName,
     options

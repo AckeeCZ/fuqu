@@ -9,7 +9,7 @@ interface FuQuPubSubOptions extends FuQuOptions {
     subscriptionOptions?: SubscriptionOptions;
 }
 
-export const createPubsubAdapter: FuQuCreator<FuQuPubSubOptions, Message> = (pubSub: PubSub, topicName, options) => {
+export const fuQuPubSub: FuQuCreator<FuQuPubSubOptions, Message> = (pubSub: PubSub, topicName, options) => {
     if (options?.maxMessages) {
         options.subscriptionOptions = {
             ...options.subscriptionOptions,
