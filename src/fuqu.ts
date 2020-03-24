@@ -1,5 +1,6 @@
 export type FuQuOptions<P = any, A = any> = {
     eventLogger?: (event: Event<P, A>) => void;
+    maxMessages?: number,
 };
 
 export type MessageData<P, A> = {

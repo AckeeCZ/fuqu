@@ -18,6 +18,7 @@ export const createRabbitAdapter: FuQuCreator<FuQuRabbitOptions, Message> = (
             channel.assertQueue(topicName, {
                 durable: false,
             });
+            channel.prefetch(options?.maxMessages ?? 0)
             return channel;
         };
     })();

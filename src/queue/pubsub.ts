@@ -10,6 +10,16 @@ interface FuQuPubSubOptions extends FuQuOptions {
 }
 
 export const createPubsubAdapter: FuQuCreator<FuQuPubSubOptions, Message> = (pubSub: PubSub, topicName, options) => {
+    if (options?.maxMessages) {
+        options.subscriptionOptions = {
+            ...options.subscriptionOptions,
+            flowControl: {
+                ...options.subscriptionOptions?.flowControl,
+                maxMessages: options?.maxMessages,
+                allowExcessMessages: false,
+            }
+        }
+    }
     const topic = pubSub
         .topic(topicName, options?.publishOptions)
         .get({ autoCreate: true })

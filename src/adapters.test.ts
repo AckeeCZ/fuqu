@@ -49,9 +49,9 @@ for (let adapter of adapters) {
             test('Nack message comes back', async () => {
                 const msg = { foo: new Date().getTime() };
                 const fuq = await adapter.createFuQu<{ foo: number }, any>('fuqu-nack');
-                const handler = jest.fn()
+                const handler = jest.fn();
                 await new Promise(async resolve => {
-                    handler.mockRejectedValueOnce(new Error()).mockImplementationOnce(resolve)
+                    handler.mockRejectedValueOnce(new Error()).mockImplementationOnce(resolve);
                     await fuq.subscribe(handler);
                     await fuq.publish(msg);
                 });
@@ -117,17 +117,44 @@ for (let adapter of adapters) {
                 });
                 test('Times align: publishTime < receiveTime < finishTime', () => {
                     const ack = events.find(e => e.action === 'ack')! as FinishedMessageMetadata<any, any>;
-                    expect(ack.publishTime.getTime()).toBeLessThanOrEqual(ack.receiveTime.getTime())
-                    expect(ack.receiveTime.getTime()).toBeLessThanOrEqual(ack.finishTime.getTime())
+                    expect(ack.publishTime.getTime()).toBeLessThanOrEqual(ack.receiveTime.getTime());
+                    expect(ack.receiveTime.getTime()).toBeLessThanOrEqual(ack.finishTime.getTime());
                 });
                 test('Durations positive and align: processDuration < totalDuration', () => {
                     const ack = events.find(e => e.action === 'ack')! as FinishedMessageMetadata<any, any>;
                     expect(ack.processDurationMillis).toBeLessThanOrEqual(ack.totalDurationMillis);
                     expect(ack.processDurationMillis).toBeGreaterThanOrEqual(0);
                 });
-                test.todo('Types match');
-                test.todo('Can send/receive large batch');
-                test.todo('Supports maxMessages flow control');
+            });
+            test.todo('Types match');
+            test.todo('Can send/receive large batch');
+            describe('Flow control', () => {
+                const testFlowControl = async (topicName: string, n: number, options?: FuQuOptions) => {
+                    const fuq = await adapter.createFuQu(topicName, options);
+                    let running = 0;
+                    let processed = 0;
+                    const simultaneouslyRan: number[] = [];
+                    await new Promise(async resolve => {
+                        await fuq.subscribe(async () => {
+                            running++;
+                            await new Promise(r => setTimeout(r, 300));
+                            simultaneouslyRan.push(running);
+                            await new Promise(r => setTimeout(r, 300));
+                            running--;
+                            processed++;
+                            if (processed === n) resolve();
+                        });
+                        Array.from(new Array(n).keys()).forEach(i => fuq.publish({ i }));
+                    });
+                    await fuq.close();
+                    return simultaneouslyRan;
+                };
+                test('Runs handlers simultaneously by default', async () => {
+                    expect(uniq(await testFlowControl('fuqu-flow1', 3))).toStrictEqual([3]);
+                });
+                test('Supports maxMessages flow control', async () => {
+                    expect(uniq(await testFlowControl('fuqu-flow1', 3, { maxMessages: 1 }))).toStrictEqual([1]);
+                });
             });
         });
     });
