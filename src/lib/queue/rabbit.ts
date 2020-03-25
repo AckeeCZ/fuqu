@@ -1,6 +1,7 @@
 import { Connection, Channel, Message } from 'amqplib';
 import { FuQuCreator, createFuQu } from '../fuquAdapter';
 import { FuQuOptions } from '../fuqu';
+import { fuQuMemory } from './memory';
 
 interface FuQuRabbitOptions extends FuQuOptions {}
 
@@ -9,6 +10,9 @@ export const fuQuRabbit: FuQuCreator<FuQuRabbitOptions, Message> = (
     topicName,
     options
 ) => {
+    if (options?.useMock) {
+        return fuQuMemory(undefined, topicName, options) as any;
+    }
     let channelClosed = false;
     const getChannel = (() => {
         let channel: Channel | undefined;
@@ -24,6 +28,7 @@ export const fuQuRabbit: FuQuCreator<FuQuRabbitOptions, Message> = (
     })();
     return createFuQu(
         {
+            name: 'rabbit',
             isAlive: async () => {
                 const channel = await getChannel();
                 return (await channel.checkQueue(topicName)) && !channelClosed;

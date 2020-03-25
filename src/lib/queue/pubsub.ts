@@ -1,6 +1,7 @@
 import { Message, PubSub } from '@google-cloud/pubsub';
 import { FuQuCreator, createFuQu } from '../fuquAdapter';
 import { FuQuOptions } from '../fuqu';
+import { fuQuMemory } from './memory';
 
 type PublishOptions = Parameters<PubSub['topic']>[1];
 type SubscriptionOptions = Parameters<PubSub['subscription']>[1];
@@ -10,6 +11,9 @@ interface FuQuPubSubOptions extends FuQuOptions {
 }
 
 export const fuQuPubSub: FuQuCreator<FuQuPubSubOptions, Message> = (pubSub: PubSub, topicName, options) => {
+    if (options?.useMock) {
+        return fuQuMemory(undefined, topicName, options) as any;
+    }
     if (options?.maxMessages) {
         options.subscriptionOptions = {
             ...options.subscriptionOptions,
@@ -32,6 +36,7 @@ export const fuQuPubSub: FuQuCreator<FuQuPubSubOptions, Message> = (pubSub: PubS
     );
     return createFuQu(
         {
+            name: 'pubsub',
             isAlive: () => subscription.then(s => s.isOpen),
             close: () => subscription.then(s => s.close()),
             publishJson: async (payload, attributes) => {

@@ -1,6 +1,7 @@
 export type FuQuOptions<P = any, A = any> = {
     eventLogger?: (event: Event<P, A>) => void;
     maxMessages?: number,
+    useMock?: boolean,
 };
 
 export type MessageData<P, A> = {
@@ -18,8 +19,8 @@ export type FinishedMessageMetadata<P, A> = IncomingMessageMetadata<P, A> & {
     // Duration from receive to finish
     processDurationMillis: number;
 };
-
-export type Event<P, A> = { topicName: string } & (
+export type Event<P, A> = { topicName: string, adapter: string } & BareEvent<P, A>;
+export type BareEvent<P, A> = { topicName: string, adapter: string } & (
     | { action: 'create'; options: any }
     | { action: 'hc'; ok: boolean }
     | { action: 'close' }

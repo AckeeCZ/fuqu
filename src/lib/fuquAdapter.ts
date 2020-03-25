@@ -1,4 +1,4 @@
-import { FuQuOptions, FuQu, Handler, IncomingMessageMetadata, FinishedMessageMetadata, Event } from './fuqu';
+import { FuQuOptions, FuQu, Handler, IncomingMessageMetadata, FinishedMessageMetadata, Event, BareEvent } from './fuqu';
 
 export type FuQuCreator<O extends FuQuOptions<any, any>, Message> = <
     Payload extends object,
@@ -9,7 +9,8 @@ export type FuQuCreator<O extends FuQuOptions<any, any>, Message> = <
     options?: O
 ) => FuQu<Payload, Attributes, Message>;
 
-interface FuQuAdapter<P, A, M> {
+export interface FuQuAdapter<P, A, M> {
+    name: string;
     publishJson: (payload: P, attributes?: A) => Promise<void>;
     registerHandler: (handler: Handler<P, A, M>) => Promise<void> | void;
     ack: (message: M) => Promise<void> | void;
@@ -24,57 +25,60 @@ interface FuQuAdapter<P, A, M> {
 }
 
 export const createFuQu = <P, A, M>(
-    defs: FuQuAdapter<P, A, M>,
+    adapter: FuQuAdapter<P, A, M>,
     topicName: string,
     options?: FuQuOptions
 ): FuQu<P, A, M> => {
     const debugLog = require('debug')(`fuqu:${topicName}`);
-    const log = (event: Event<P, A>) => {
+    const log = (justEvent: BareEvent<P, A>) => {
+        const event = justEvent as Event<P, A>; // avoid spread, fill missing manually
+        event.adapter = adapter.name,
+        event.topicName = topicName,
         debugLog(event)
         options?.eventLogger?.(event);
     }
-    log({ topicName, action: 'create', options });
+    log({ topicName, adapter: adapter.name, action: 'create', options });
     return {
         publish: async (payload, attributes) => {
-            await defs.publishJson(payload, attributes);
-            log({ payload, attributes, topicName, action: 'publish' });
+            await adapter.publishJson(payload, attributes);
+            log({ payload, attributes, topicName, adapter: adapter.name, action: 'publish' });
         },
         subscribe: async handler => {
-            log({ topicName, action: 'subscribe', handler: handler.name });
+            log({ topicName, adapter: adapter.name, action: 'subscribe', handler: handler.name });
             const wrappedHandler: typeof handler = async (payload, attributes, message) => {
-                const incomingMetadata = defs.createIncomingMessageMetadata(message, payload);
+                const incomingMetadata = adapter.createIncomingMessageMetadata(message, payload);
                 try {
                     log({
-                        topicName,
+                        topicName, adapter: adapter.name,
                         action: 'receive',
                         ...incomingMetadata,
                     }),
                         await handler(payload, attributes, message);
-                    await defs.ack(message);
+                    await adapter.ack(message);
                     log({
-                        topicName,
+                        topicName, adapter: adapter.name,
                         action: 'ack',
-                        ...defs.createFinishedMessageMetadata(message, incomingMetadata),
+                        ...adapter.createFinishedMessageMetadata(message, incomingMetadata),
                     });
                 } catch (error) {
-                    await defs.nack(message);
+                    await adapter.nack(message);
                     log({
-                        topicName,
+                        topicName, adapter: adapter.name,
                         action: 'nack',
                         error,
-                        ...defs.createFinishedMessageMetadata(message, incomingMetadata),
+                        ...adapter.createFinishedMessageMetadata(message, incomingMetadata),
                     });
                 }
             };
-            await defs.registerHandler(wrappedHandler);
+            await adapter.registerHandler(wrappedHandler);
         },
-        close: async () => defs.close().then(() => log({ topicName, action: 'close' })),
+        close: async () => adapter.close().then(() => log({ topicName, adapter: adapter.name, action: 'close' })),
         isAlive: async (timeoutMillis = 10 * 1e3) => {
             const ok = await Promise.race<Promise<boolean>>([
-                defs.isAlive().catch(() => false),
+                adapter.isAlive().catch(() => false),
                 new Promise(resolve => setTimeout(() => resolve(false), timeoutMillis)),
             ]);
-            log({ topicName, ok, action: 'hc' });
+            log({ topicName, adapter: adapter.name, ok, action: 'hc' });
             return ok;
         },
     };

@@ -11,7 +11,7 @@ const adapters: {
     name: string;
     createFuQu: <P extends object, A extends Record<string, string> = Record<string, string>>(
         topicName: string,
-        options?: FuQuOptions
+        options?: FuQuOptions,
     ) => Promise<FuQu<P, A, any>>;
 }[] = [
     {
@@ -25,7 +25,7 @@ const adapters: {
     {
         name: 'Rabbit MQ',
         createFuQu: async (topicName: string, options?: FuQuOptions) =>
-            fuQuRabbit(await connect('amqp://localhost'), topicName, options),
+            fuQuRabbit(options?.useMock ? null as any : await connect('amqp://localhost'), topicName, options),
     },
     {
         name: 'Memory',
@@ -185,5 +185,14 @@ for (let adapter of adapters) {
                 expect(uniq(await testFlowControl('fuqu-flow1', 3, { maxMessages: 1 }))).toStrictEqual([1]);
             });
         });
+        describe('Mocking', () => {
+            test('Using mock always creates in-memory instance', async () => {
+                const events: Event<any, any>[] = [];
+                const fuq = await adapter.createFuQu('fuqu-mock', { useMock: true, eventLogger: e => { events.push(e) } });
+                await fuq.close();
+                expect(events.length).toBeGreaterThan(0);
+                events.forEach(e => expect(e.adapter).toBe('memory'))
+            });
+        })
     });
 }

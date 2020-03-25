@@ -1,4 +1,4 @@
-import { FuQuCreator, createFuQu } from '../fuquAdapter';
+import { FuQuCreator, createFuQu, FuQuAdapter } from '../fuquAdapter';
 import { FuQuOptions, Handler } from '../fuqu';
 
 interface FuQuMemoryOptions extends FuQuOptions {}
@@ -26,6 +26,7 @@ export const fuQuMemory: FuQuCreator<FuQuMemoryOptions, Message> = (_: undefined
     }
     return createFuQu(
         {
+            name: 'memory',
             isAlive: () => sleep(500).then(() => opened),
             close: async () => { opened = false },
             publishJson: async (payload, attributes) => {
