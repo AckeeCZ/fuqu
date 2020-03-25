@@ -1,84 +1,94 @@
 <div align="center">
 
 
-[![Build Status](https://travis-ci.org/AckeeCZ/fuqu.svg?branch=master)](https://travis-ci.org/AckeeCZ/fuqu)
-[![Known Vulnerabilities](https://snyk.io/test/github/AckeeCZ/fuqu/badge.svg)](https://snyk.io/test/github/AckeeCZ/fuqu)
+<img src="./resources/logo.png" height="170"/>
+
+
+# FuQu _[/fʌkjuː/](https://en.wikipedia.org/wiki/Help:IPA/English)_
+
+Rude MQ wrapper that handles logging and message acknowlidgement for you
+
+[![Build Status](https://img.shields.io/travis/AckeeCZ/fuqu.svg?style=flat-square)](https://travis-ci.org/AckeeCZ/fuqu)
+[![Known Vulnerabilities](https://img.shields.io/snyk/vulnerabilities/github/AckeeCZ/fuqu.svg?style=flat-square)](https://snyk.io/test/github/AckeeCZ/fuqu)
 [![Npm](https://img.shields.io/npm/v/fuqu.svg?style=flat-square)](https://www.npmjs.com/package/fuqu)
 [![License](https://img.shields.io/github/license/AckeeCZ/fuqu.svg?style=flat-square)](https://github.com/AckeeCZ/fuqu/blob/master/LICENSE)
 
-<img src="./resources/logo.png" height="170"/>
+
 </div>
 
-# Fuqu
+- 📨 Extensive predictable logging
+- ☔ Covered with integration tests
+- 🐇 Supports Google Pub/Sub and RabbitMQ
+- 🤡 Mock implementation for your tests
+- 💙 Typesafe message and attributes
+- 🚦 Automatic message acknowlidgement
+- 💓 Check heartbeat if connection is alive
+- ⛔ Configurable consumer flow control
+- 🐛 Debuggable with `DEBUG:*`
 
-Fuqu _([/fʌkjuː/](https://en.wikipedia.org/wiki/Help:IPA/English))_ is tiny package for node backend development which is used for manipulating with queues.
-
-GitHub repository: [https://github.com/AckeeCZ/fuqu](https://github.com/AckeeCZ/fuqu)
-
-## Install
+## Getting started
 
 ```bash
-npm i --save fuqu
+npm install fuqu
 ```
-
-## Supports
-
-- Google PubSub
-- Your custom solution which implements `FuquOperations`
-
-## Usage
 
 ```typescript
-import { Fuqu, FuquType } from 'fuqu';
-
-const data = {
-    message: 'Hello world!',
-    messageId: 1,
-};
-
-const fuq = new Fuqu(FuquType.googlePubSub, { // FuquType.custom 
-    keyFilename: ...,
-    projectId: ...,
-    topicName: ...,
- });
-fuq.off(message => { // register callback
-    const myDataObject = message.data; // FuquMessage
-    // do something
+// Create instance
+const fuQu = fuQuRabbit<{ hello: string }>(connection, 'my-queue');
+// Subscribe handler
+fuQu.subscribe(msg => {
+    console.log('Got this:', msg);
 });
-
-...
-
-return fuq.in(data) // Promise<any>
-    .then(() => {
-        console.log(`Successfully pushed to queue!`)
-    });
+// Publish message
+fuQu.publish({ hello: 'FuQu!' });
 ```
 
-### Typesafe usage
+- Handler may be async
+- Messages are automatically acknowledged. If there is an error, they are `nack`ed instead.
 
+### Create instance
 ```typescript
-import { Fuqu, FuquType } from 'fuqu';
+import { connect } from 'amqplib';
+import { PubSub } from '@google-cloud/pubsub';
+import { fuQuPubSub, fuQuRabbit } from 'fuqu';
 
-interface MyMessage {
-    code: number;
-    message: string;
-    wothReading: bool;
-}
-// Add types (unfortunatelly, you nead to reapeat the type in first arg)
-const fuq = new Fuqu<typeof FuquType.googlePubSub, MyMessage>(...);
-fuq.off(msg => {
-    msg.data // MyMessage
-    msg.original // Message (from PubSub)
-});
-fuq.in({ code: 2, message: 'yo', wothReading: false }); // OK
-fuq.in({ kabooM: '!' }); // Error: Missing `code`, ...
+// RabbitMQ
+const connection = await connect('amqp://localhost');
+const fuQu1 = fuQuRabbit(connection, 'my-queue');
 
+// Pub/Sub
+const pubSub = new PubSub({/*...*/})
+const fuQu1 = fuQuPubSub(pubSub, 'my-queue');
 ```
 
-## Debugging
-Pubsub implementation allows debug mode with debug logs, you need to set `NODE_DEBUG` variable to `fuqu`.
+### Options
+```typescript
+const fuQu = fuQuRabbit(connection, 'my-queue', {
+    // Throttle your consumers
+    maxMessages: 1,
+    // Log all events (typesafe, check for shapes!)
+    eventLogger: event => {
+        if (event.action !== 'hc') {
+            console.log(`FuQu [${event.topicName}] (${event.action})`, event)
+        }
+    },
+    // Mock with in-memory mock for your tests
+    useMock: process.env.NODE_ENV === 'test',
+    // Adapter specific options
+    assertQueueOptions: {/* ... */}
+});
+```
+ - Mock implements all general FuQu options. Accessing underlying message is unsafe and adapter specific options are ignored
+ - `eventLogger` is for application logging, if no handler is passed, logging is disabled
+ - For debug purposes, you can also enable logging via `DEBUG:*`, `DEBUG:fuqu:*` or `DEBUG:fuqu:my-topic:*`
+ - `maxMessages` is transformed into specific options for each adapter, using custom adapter options might overwrite the behavior
+
+### Rude mode
+If you want to have optimal FuQu expirience, use imports from `fuqu/dist/real`.
 
 ## Testing
+
+For running tests, start the following containers 🐳
 
 ```
 docker run --rm -it -p 8681:8681 messagebird/gcloud-pubsub-emulator:latest
