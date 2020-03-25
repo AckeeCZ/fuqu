@@ -1,9 +1,7 @@
 import { PubSub } from '@google-cloud/pubsub';
-import { fuQuPubSub } from './lib/queue/pubsub';
-import { Event, FuQuOptions, FuQu, FinishedMessageMetadata, IncomingMessageMetadata } from './lib/fuqu';
+import { Event, FuQuOptions, FuQu, FinishedMessageMetadata, IncomingMessageMetadata } from '../fuqu';
 import { connect } from 'amqplib';
-import { fuQuRabbit } from './lib/queue/rabbit';
-import { fuQuMemory } from './lib/queue/memory';
+import { fuQuPubSub, fuQuRabbit, fuQuMemory } from '../../index';
 
 const uniq = <T>(xs: T[]) => Array.from(new Set(xs));
 

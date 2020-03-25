@@ -1,7 +1,7 @@
 import { FuQuCreator, createFuQu, FuQuAdapter } from '../fuquAdapter';
 import { FuQuOptions, Handler } from '../fuqu';
 
-interface FuQuMemoryOptions extends FuQuOptions {}
+export interface FuQuMemoryOptions extends FuQuOptions {}
 
 const sleep = (t: number) => new Promise(resolve => setTimeout(resolve, t))
 

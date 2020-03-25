@@ -5,7 +5,7 @@ import { fuQuMemory } from './memory';
 
 type PublishOptions = Parameters<PubSub['topic']>[1];
 type SubscriptionOptions = Parameters<PubSub['subscription']>[1];
-interface FuQuPubSubOptions extends FuQuOptions {
+export interface FuQuPubSubOptions extends FuQuOptions {
     publishOptions?: PublishOptions;
     subscriptionOptions?: SubscriptionOptions;
 }
