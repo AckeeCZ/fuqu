@@ -3,6 +3,7 @@ import { fuQuPubSub } from './lib/queue/pubsub';
 import { Event, FuQuOptions, FuQu, FinishedMessageMetadata, IncomingMessageMetadata } from './lib/fuqu';
 import { connect } from 'amqplib';
 import { fuQuRabbit } from './lib/queue/rabbit';
+import { fuQuMemory } from './lib/queue/memory';
 
 const uniq = <T>(xs: T[]) => Array.from(new Set(xs));
 
@@ -25,6 +26,11 @@ const adapters: {
         name: 'Rabbit MQ',
         createFuQu: async (topicName: string, options?: FuQuOptions) =>
             fuQuRabbit(await connect('amqp://localhost'), topicName, options),
+    },
+    {
+        name: 'Memory',
+        createFuQu: async (topicName: string, options?: FuQuOptions) =>
+            fuQuMemory(undefined, topicName, options),
     },
 ];
 for (let adapter of adapters) {
