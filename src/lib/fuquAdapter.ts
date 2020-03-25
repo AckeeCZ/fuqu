@@ -2,7 +2,7 @@ import { BareEvent, Event, FinishedMessageMetadata, FuQu, FuQuOptions, Handler, 
 
 export type FuQuCreator<O extends FuQuOptions<any, any>, Message> = <
     Payload extends object,
-    Attributes extends { [key: string]: string }
+    Attributes extends { [key: string]: string } = Record<any, any>
 >(
     client: any,
     topicName: string,

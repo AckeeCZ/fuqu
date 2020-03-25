@@ -27,12 +27,22 @@ export const fuQuPubSub: FuQuCreator<FuQuPubSubOptions, Message> = (pubSub: PubS
     const topic = pubSub
         .topic(topicName, options?.publishOptions)
         .get({ autoCreate: true })
-        .then(x => x[0]);
+        .then(x => {
+            if (options?.publishOptions) {
+                x[0].setPublishOptions(options?.publishOptions);
+            }
+            return x[0];
+        });
     const subscription = topic.then(topic =>
         topic
             .subscription(topicName, options?.subscriptionOptions)
             .get({ autoCreate: true })
-            .then(x => x[0])
+            .then(x => {
+                if (options?.subscriptionOptions) {
+                    x[0].setOptions(options?.subscriptionOptions);
+                }
+                return x[0];
+            })
     );
     return createFuQu(
         {
