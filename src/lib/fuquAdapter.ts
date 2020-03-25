@@ -1,4 +1,4 @@
-import { FuQuOptions, FuQu, Handler, IncomingMessageMetadata, FinishedMessageMetadata } from './fuqu';
+import { FuQuOptions, FuQu, Handler, IncomingMessageMetadata, FinishedMessageMetadata, Event } from './fuqu';
 
 export type FuQuCreator<O extends FuQuOptions<any, any>, Message> = <
     Payload extends object,
@@ -28,32 +28,37 @@ export const createFuQu = <P, A, M>(
     topicName: string,
     options?: FuQuOptions
 ): FuQu<P, A, M> => {
-    options?.eventLogger?.({ topicName, action: 'create', options });
+    const debugLog = require('debug')(`fuqu:${topicName}`);
+    const log = (event: Event<P, A>) => {
+        debugLog(event)
+        options?.eventLogger?.(event);
+    }
+    log({ topicName, action: 'create', options });
     return {
         publish: async (payload, attributes) => {
             await defs.publishJson(payload, attributes);
-            options?.eventLogger?.({ payload, attributes, topicName, action: 'publish' });
+            log({ payload, attributes, topicName, action: 'publish' });
         },
         subscribe: async handler => {
-            options?.eventLogger?.({ topicName, action: 'subscribe', handler: handler.name });
+            log({ topicName, action: 'subscribe', handler: handler.name });
             const wrappedHandler: typeof handler = async (payload, attributes, message) => {
                 const incomingMetadata = defs.createIncomingMessageMetadata(message, payload);
                 try {
-                    options?.eventLogger?.({
+                    log({
                         topicName,
                         action: 'receive',
                         ...incomingMetadata,
                     }),
                         await handler(payload, attributes, message);
                     await defs.ack(message);
-                    options?.eventLogger?.({
+                    log({
                         topicName,
                         action: 'ack',
                         ...defs.createFinishedMessageMetadata(message, incomingMetadata),
                     });
                 } catch (error) {
                     await defs.nack(message);
-                    options?.eventLogger?.({
+                    log({
                         topicName,
                         action: 'nack',
                         error,
@@ -63,13 +68,13 @@ export const createFuQu = <P, A, M>(
             };
             await defs.registerHandler(wrappedHandler);
         },
-        close: async () => defs.close().then(() => options?.eventLogger?.({ topicName, action: 'close' })),
+        close: async () => defs.close().then(() => log({ topicName, action: 'close' })),
         isAlive: async (timeoutMillis = 10 * 1e3) => {
             const ok = await Promise.race<Promise<boolean>>([
                 defs.isAlive().catch(() => false),
                 new Promise(resolve => setTimeout(() => resolve(false), timeoutMillis)),
             ]);
-            options?.eventLogger?.({ topicName, ok, action: 'hc' });
+            log({ topicName, ok, action: 'hc' });
             return ok;
         },
     };

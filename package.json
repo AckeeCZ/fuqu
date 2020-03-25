@@ -15,7 +15,8 @@
   "license": "MIT",
   "dependencies": {
     "@google-cloud/pubsub": "^1.6.0",
-    "@types/amqplib": "^0.5.13"
+    "@types/amqplib": "^0.5.13",
+    "debug": "^4.1.1"
   },
   "devDependencies": {
     "@types/jest": "^25.1.4",
