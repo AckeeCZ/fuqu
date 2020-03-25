@@ -10,8 +10,8 @@ describe('Fuqu', () => {
             publishParams: 'Parameters<MyFuQu["publish"]>',
         });
         expect(res.handlerParams).toMatchInlineSnapshot(
-            `"[{ foo: number; }, { v: string; }, { data: string; meta: Record<string, string>; }]"`
+            '"[{ foo: number; }, { v: string; }, { data: string; meta: Record<string, string>; }]"'
         );
-        expect(res.publishParams).toMatchInlineSnapshot(`"[{ foo: number; }, ({ v: string; } | undefined)?]"`);
+        expect(res.publishParams).toMatchInlineSnapshot('"[{ foo: number; }, ({ v: string; } | undefined)?]"');
     });
 });

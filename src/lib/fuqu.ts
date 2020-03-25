@@ -20,22 +20,22 @@ export type FinishedMessageMetadata<P, A> = IncomingMessageMetadata<P, A> & {
     processDurationMillis: number;
 };
 export type Event<P, A> = { topicName: string, adapter: string } & BareEvent<P, A>;
-export type BareEvent<P, A> = { topicName: string, adapter: string } & (
+export type BareEvent<P, A> = (
     | { action: 'create'; options: any }
     | { action: 'hc'; ok: boolean }
     | { action: 'close' }
     | { action: 'subscribe'; handler: string }
     | (MessageData<P, A> & { action: 'publish' })
     | (IncomingMessageMetadata<P, A> & {
-          action: 'receive';
-      })
+        action: 'receive';
+    })
     | (FinishedMessageMetadata<P, A> & {
-          action: 'ack';
-      })
+        action: 'ack';
+    })
     | (FinishedMessageMetadata<P, A> & {
-          action: 'nack';
-          error: any;
-      })
+        action: 'nack';
+        error: any;
+    })
 );
 
 export type Handler<P, A, M> = (data: P, attributes: A, message: M) => Promise<void> | void;

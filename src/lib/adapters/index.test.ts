@@ -1,7 +1,7 @@
 import { PubSub } from '@google-cloud/pubsub';
-import { Event, FuQuOptions, FuQu, FinishedMessageMetadata, IncomingMessageMetadata } from '../fuqu';
 import { connect } from 'amqplib';
-import { fuQuPubSub, fuQuRabbit, fuQuMemory } from '../../index';
+import { fuQuMemory, fuQuPubSub, fuQuRabbit } from '../../index';
+import { Event, FinishedMessageMetadata, FuQu, FuQuOptions, IncomingMessageMetadata } from '../fuqu';
 
 const uniq = <T>(xs: T[]) => Array.from(new Set(xs));
 
@@ -31,7 +31,7 @@ const adapters: {
             fuQuMemory(undefined, topicName, options),
     },
 ];
-for (let adapter of adapters) {
+for (const adapter of adapters) {
     describe(adapter.name, () => {
         test('Creates fuqu instance', async () => {
             const fuqu = await adapter.createFuQu('smoke');
@@ -74,7 +74,7 @@ for (let adapter of adapters) {
                 const input = Array.from(new Array(n).keys());
                 await new Promise(async resolve => {
                     await fuq.subscribe(async p => {
-                        processed++;
+                        processed += 1;
                         received.push(p.i);
                         if (processed === n) resolve();
                     });
@@ -163,12 +163,12 @@ for (let adapter of adapters) {
                 const simultaneouslyRan: number[] = [];
                 await new Promise(async resolve => {
                     await fuq.subscribe(async () => {
-                        running++;
+                        running += 1;
                         await new Promise(r => setTimeout(r, 300));
                         simultaneouslyRan.push(running);
                         await new Promise(r => setTimeout(r, 300));
-                        running--;
-                        processed++;
+                        running -= 1;
+                        processed += 1;
                         if (processed === n) resolve();
                     });
                     Array.from(new Array(n).keys()).forEach(i => fuq.publish({ i }));
@@ -186,11 +186,11 @@ for (let adapter of adapters) {
         describe('Mocking', () => {
             test('Using mock always creates in-memory instance', async () => {
                 const events: Event<any, any>[] = [];
-                const fuq = await adapter.createFuQu('fuqu-mock', { useMock: true, eventLogger: e => { events.push(e) } });
+                const fuq = await adapter.createFuQu('fuqu-mock', { useMock: true, eventLogger: e => { events.push(e); } });
                 await fuq.close();
                 expect(events.length).toBeGreaterThan(0);
-                events.forEach(e => expect(e.adapter).toBe('memory'))
+                events.forEach(e => expect(e.adapter).toBe('memory'));
             });
-        })
+        });
     });
 }

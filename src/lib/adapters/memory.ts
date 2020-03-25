@@ -1,9 +1,9 @@
-import { FuQuCreator, createFuQu } from '../fuquAdapter';
 import { FuQuOptions, Handler } from '../fuqu';
+import { createFuQu, FuQuCreator } from '../fuquAdapter';
 
 export interface FuQuMemoryOptions extends FuQuOptions {}
 
-const sleep = (t: number) => new Promise(resolve => setTimeout(resolve, t))
+const sleep = (t: number) => new Promise(resolve => setTimeout(resolve, t));
 
 type Message = { payload: any, attributes: any, publishTime: Date };
 
@@ -15,20 +15,20 @@ export const fuQuMemory: FuQuCreator<FuQuMemoryOptions, Message> = (_: undefined
     const maxMessages = options?.maxMessages ?? Infinity;
     const consume = () => {
         if (openedMessages < maxMessages) {
-            const toPop = Math.min(maxMessages, messages.length) - openedMessages
-            for (let i = 0; i < toPop; ++i) {
-                openedMessages++;
+            const toPop = Math.min(maxMessages, messages.length) - openedMessages;
+            for (let i = 0; i < toPop; i += 1) {
+                openedMessages += 1;
                 const msg = messages.pop()!;
                 setImmediate(() => handlers.forEach(h => h(msg.payload, msg.attributes, msg)));
             }
         }
-        if (messages.length !== 0) setImmediate(consume)
-    }
+        if (messages.length !== 0) setImmediate(consume);
+    };
     return createFuQu(
         {
             name: 'memory',
             isAlive: () => sleep(500).then(() => opened),
-            close: async () => { opened = false },
+            close: async () => { opened = false; },
             publishJson: async (payload, attributes) => {
                 messages.push({ payload, attributes, publishTime: new Date() });
                 setImmediate(consume);
@@ -36,15 +36,15 @@ export const fuQuMemory: FuQuCreator<FuQuMemoryOptions, Message> = (_: undefined
             registerHandler: async handler => {
                 handlers.push(handler);
             },
-            ack: () => { openedMessages-- },
-            nack: msg => { openedMessages--; messages.push(msg); setImmediate(consume); },
+            ack: () => { openedMessages -= 1; },
+            nack: msg => { openedMessages -= 1; messages.push(msg); setImmediate(consume); },
             createIncomingMessageMetadata: (message, payload) => ({
                 payload,
                 publishTime: new Date(message.publishTime.getTime()),
                 receiveTime: new Date(),
                 attributes: message.attributes as any,
             }),
-            createFinishedMessageMetadata: (message, incomingMetadata) => {
+            createFinishedMessageMetadata: incomingMetadata => {
                 const finished = new Date();
                 return {
                     ...incomingMetadata,

@@ -1,5 +1,5 @@
+import { fuQuMemory } from './lib/adapters/memory';
 import { fuQuPubSub } from './lib/adapters/pubsub';
 import { fuQuRabbit } from './lib/adapters/rabbit';
-import { fuQuMemory } from './lib/adapters/memory';
 
-export { fuQuPubSub, fuQuRabbit, fuQuMemory }
+export { fuQuPubSub, fuQuRabbit, fuQuMemory };

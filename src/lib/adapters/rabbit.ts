@@ -1,11 +1,11 @@
-import { Connection, Channel, Message, Options } from 'amqplib';
-import { FuQuCreator, createFuQu } from '../fuquAdapter';
+import { Channel, Connection, Message, Options } from 'amqplib';
 import { FuQuOptions } from '../fuqu';
+import { createFuQu, FuQuCreator } from '../fuquAdapter';
 import { fuQuMemory } from './memory';
 
 export interface FuQuRabbitOptions extends FuQuOptions {
-    assertQueueOptions?: Options.AssertQueue
-    consumeOptions?: Options.Consume
+    assertQueueOptions?: Options.AssertQueue;
+    consumeOptions?: Options.Consume;
 }
 
 export const fuQuRabbit: FuQuCreator<FuQuRabbitOptions, Message> = (
@@ -24,7 +24,7 @@ export const fuQuRabbit: FuQuCreator<FuQuRabbitOptions, Message> = (
             await channel.assertQueue(topicName, options?.assertQueueOptions ?? {
                 durable: false,
             });
-            await channel.prefetch(options?.maxMessages ?? 0)
+            await channel.prefetch(options?.maxMessages ?? 0);
             return channel;
         };
     })();
@@ -61,7 +61,7 @@ export const fuQuRabbit: FuQuCreator<FuQuRabbitOptions, Message> = (
                 receiveTime: new Date(),
                 attributes: message.properties.headers as any,
             }),
-            createFinishedMessageMetadata: (message, incomingMetadata) => {
+            createFinishedMessageMetadata: incomingMetadata => {
                 const finished = new Date();
                 return {
                     ...incomingMetadata,
