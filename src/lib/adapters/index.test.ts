@@ -180,7 +180,7 @@ for (let adapter of adapters) {
                 expect(uniq(await testFlowControl('fuqu-flow1', 3))).toStrictEqual([3]);
             });
             test('Supports maxMessages flow control', async () => {
-                expect(uniq(await testFlowControl('fuqu-flow1', 3, { maxMessages: 1 }))).toStrictEqual([1]);
+                expect(uniq(await testFlowControl('fuqu-flow2', 3, { maxMessages: 1 }))).toStrictEqual([1]);
             });
         });
         describe('Mocking', () => {

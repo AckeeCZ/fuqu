@@ -1,4 +1,4 @@
-import { FuQuCreator, createFuQu, FuQuAdapter } from '../fuquAdapter';
+import { FuQuCreator, createFuQu } from '../fuquAdapter';
 import { FuQuOptions, Handler } from '../fuqu';
 
 export interface FuQuMemoryOptions extends FuQuOptions {}

@@ -16,16 +16,15 @@ export const fuQuRabbit: FuQuCreator<FuQuRabbitOptions, Message> = (
     if (options?.useMock) {
         return fuQuMemory(undefined, topicName, options) as any;
     }
-    let channelClosed = false;
     const getChannel = (() => {
         let channel: Channel | undefined;
         return async () => {
             if (channel) return channel;
             channel = await connection.createChannel();
-            channel.assertQueue(topicName, options?.assertQueueOptions ?? {
+            await channel.assertQueue(topicName, options?.assertQueueOptions ?? {
                 durable: false,
             });
-            channel.prefetch(options?.maxMessages ?? 0)
+            await channel.prefetch(options?.maxMessages ?? 0)
             return channel;
         };
     })();
@@ -34,13 +33,12 @@ export const fuQuRabbit: FuQuCreator<FuQuRabbitOptions, Message> = (
             name: 'rabbit',
             isAlive: async () => {
                 const channel = await getChannel();
-                return (await channel.checkQueue(topicName)) && !channelClosed;
+                return !!(await channel.checkQueue(topicName));
             },
             close: async () => {
                 await new Promise(setImmediate);
                 const channel = await getChannel();
                 await channel.close();
-                channelClosed = true;
                 await connection.close();
             },
             publishJson: async (payload, attributes) => {
