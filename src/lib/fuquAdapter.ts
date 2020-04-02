@@ -1,5 +1,5 @@
 import { BareEvent, Event, FinishedMessageMetadata, FuQu, FuQuOptions, Handler, IncomingMessageMetadata } from './fuqu';
-
+import * as debug from 'debug';
 export type FuQuCreator<O extends FuQuOptions<any, any>, Message> = <
     Payload extends object,
     Attributes extends { [key: string]: string } = Record<any, any>
@@ -29,7 +29,7 @@ export const createFuQu = <P, A, M>(
     topicName: string,
     options?: FuQuOptions
 ): FuQu<P, A, M> => {
-    const debugLog = require('debug')(`fuqu:${topicName}`);
+    const debugLog = debug(`fuqu:${topicName}`);
     const log = (justEvent: BareEvent<P, A>) => {
         const event = justEvent as Event<P, A>; // avoid spread, fill missing manually
         event.adapter = adapter.name,
