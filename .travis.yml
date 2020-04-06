@@ -13,6 +13,7 @@ node_js:
 script: 
   - npm run build
   - npm run test
+  - npm run test:cover
 deploy: 
   - provider: npm
     email: ackeedevelopment@gmail.com
