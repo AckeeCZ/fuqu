@@ -10,6 +10,7 @@ Rude MQ wrapper that handles logging and message acknowlidgement for you
 
 [![Build Status](https://img.shields.io/travis/AckeeCZ/fuqu.svg?style=flat-square)](https://travis-ci.org/AckeeCZ/fuqu)
 [![Known Vulnerabilities](https://img.shields.io/snyk/vulnerabilities/github/AckeeCZ/fuqu.svg?style=flat-square)](https://snyk.io/test/github/AckeeCZ/fuqu)
+[![Coverage](https://img.shields.io/coveralls/github/AckeeCZ/fuqu?style=flat-square)](https://coveralls.io/github/AckeeCZ/fuqu)
 [![Npm](https://img.shields.io/npm/v/fuqu.svg?style=flat-square)](https://www.npmjs.com/package/fuqu)
 [![License](https://img.shields.io/github/license/AckeeCZ/fuqu.svg?style=flat-square)](https://github.com/AckeeCZ/fuqu/blob/master/LICENSE)
 
