@@ -92,8 +92,7 @@ If you want to have optimal FuQu expirience, use imports from `fuqu/dist/real`.
 For running tests, start the following containers 🐳
 
 ```
-docker run --rm -it -p 8681:8681 messagebird/gcloud-pubsub-emulator:latest
-docker run --rm -it -p 5672:5672 --hostname localhost rabbitmq:3
+docker-compose up --build
 ```
 
 ## License
