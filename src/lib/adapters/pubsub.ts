@@ -49,8 +49,8 @@ export const fuQuPubSub: FuQuCreator<FuQuPubSubOptions, Message> = (pubSub: PubS
             name: 'pubsub',
             isAlive: () => subscription.then(s => s.isOpen),
             close: () => subscription.then(s => s.close()),
-            publishJson: async (payload, attributes) => {
-                await (await topic).publishJSON(payload, attributes);
+            publishJson: async (payload, attributes, publishOptions) => {
+                await (await topic).publishMessage({ attributes, json: payload, orderingKey: publishOptions?.orderingKey })
             },
             registerHandler: async handler => {
                 const sub = await subscription;

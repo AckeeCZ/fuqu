@@ -46,7 +46,7 @@ export interface FuQu<P, A, M> {
      * @param payload Object-like message payload
      * @param attributes Optional message attributes
      */
-    publish: (payload: P, attributes?: A) => Promise<void>;
+    publish: (payload: P, attributes?: A, options?: {[key: string]: any}) => Promise<void>;
     /**
      * Subscribe a message receiver
      * @param handler Async handler that is given data and original message.
