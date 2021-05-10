@@ -12,6 +12,6 @@ describe('Fuqu', () => {
         expect(res.handlerParams).toMatchInlineSnapshot(
             '"[{ foo: number; }, { v: string; }, { data: string; meta: Record<string, string>; }]"'
         );
-        expect(res.publishParams).toMatchInlineSnapshot('"[{ foo: number; }, ({ v: string; } | undefined)?]"');
+        expect(res.publishParams).toMatchInlineSnapshot('"[{ foo: number; }, ({ v: string; } | undefined)?, ({ [key: string]: any; } | undefined)?]"');
     });
 });

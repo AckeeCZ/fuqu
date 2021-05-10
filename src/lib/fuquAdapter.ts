@@ -11,7 +11,7 @@ export type FuQuCreator<O extends FuQuOptions<any, any>, Message> = <
 
 export interface FuQuAdapter<P, A, M> {
     name: string;
-    publishJson: (payload: P, attributes?: A) => Promise<void>;
+    publishJson: (payload: P, attributes?: A, options?: {[key: string]: any}) => Promise<void>;
     registerHandler: (handler: Handler<P, A, M>) => Promise<void> | void;
     ack: (message: M) => Promise<void> | void;
     nack: (message: M) => Promise<void> | void;
@@ -39,8 +39,8 @@ export const createFuQu = <P, A, M>(
     };
     log({ options, action: 'create' });
     return {
-        publish: async (payload, attributes) => {
-            await adapter.publishJson(payload, attributes);
+        publish: async (payload, attributes, publishOptions) => {
+            await adapter.publishJson(payload, attributes, publishOptions);
             log({ payload, attributes, action: 'publish' });
         },
         subscribe: async handler => {
