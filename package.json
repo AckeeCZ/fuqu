@@ -8,7 +8,7 @@
     "build": "tsc -p .",
     "lint": "tslint -p . --force"
   },
-  "version": "2.0.0",
+  "version": "2.1.0",
   "author": "Stefan Prokop <stefan.prokop@ackee.cz>",
   "contributors": [
     "Jaroslav Šmolík <grissius@gmail.com>"
