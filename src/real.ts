@@ -4,19 +4,19 @@ import { fuQuRabbit } from './lib/adapters/rabbit';
 import { FuQu } from './lib/fuqu';
 import { FuQuCreator } from './lib/fuquAdapter';
 
-interface FuckYou<P extends object, A extends Record<string, string>, M> extends FuQu<P, A, M> {
-    in: FuQu<P, A, M>['publish'];
-    off: FuQu<P, A, M>['subscribe'];
+interface FuckYou<P extends object, A extends Record<string, string>, M, PO> extends FuQu<P, A, M, PO> {
+    in: FuQu<P, A, M, PO>['publish'];
+    off: FuQu<P, A, M, PO>['subscribe'];
 }
 
-const makeInstanceReal = <P extends object, A extends Record<string, string>, M>(instance: FuQu<P, A, M>): FuckYou<P, A, M> => ({
+const makeInstanceReal = <P extends object, A extends Record<string, string>, M, PO>(instance: FuQu<P, A, M, PO>): FuckYou<P, A, M, PO> => ({
     ...instance,
     in: instance.publish,
     off: instance.subscribe,
 });
 
-const makeReal = <O, M>(adapter: FuQuCreator<O, M>) => {
-    return <P extends object, A extends Record<string, string>>(...args: Parameters<FuQuCreator<O, M>>) => makeInstanceReal<P, A, M>(adapter(...args));
+const makeReal = <O, M, PO>(adapter: FuQuCreator<O, M>) => {
+    return <P extends object, A extends Record<string, string>>(...args: Parameters<FuQuCreator<O, M>>) => makeInstanceReal<P, A, M, PO>(adapter(...args));
 };
 
 export const fuckPubSub = makeReal(fuQuPubSub);

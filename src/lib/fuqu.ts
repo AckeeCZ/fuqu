@@ -40,13 +40,13 @@ export type BareEvent<P, A> = (
 
 export type Handler<P, A, M> = (data: P, attributes: A, message: M) => Promise<void> | void;
 
-export interface FuQu<P, A, M> {
+export interface FuQu<P, A, M, PO> {
     /**
      * Publish a message
      * @param payload Object-like message payload
      * @param attributes Optional message attributes
      */
-    publish: (payload: P, attributes?: A, options?: {[key: string]: any}) => Promise<void>;
+    publish: (payload: P, attributes?: A, options?: PO) => Promise<void>;
     /**
      * Subscribe a message receiver
      * @param handler Async handler that is given data and original message.

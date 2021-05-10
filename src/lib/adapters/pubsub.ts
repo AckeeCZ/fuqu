@@ -1,4 +1,5 @@
 import { Message, PubSub } from '@google-cloud/pubsub';
+import { MessageOptions } from '@google-cloud/pubsub/build/src/topic';
 import { FuQuOptions } from '../fuqu';
 import { createFuQu, FuQuCreator } from '../fuquAdapter';
 import { fuQuMemory } from './memory';
@@ -49,8 +50,8 @@ export const fuQuPubSub: FuQuCreator<FuQuPubSubOptions, Message> = (pubSub: PubS
             name: 'pubsub',
             isAlive: () => subscription.then(s => s.isOpen),
             close: () => subscription.then(s => s.close()),
-            publishJson: async (payload, attributes, publishOptions) => {
-                await (await topic).publishMessage({ attributes, json: payload, orderingKey: publishOptions?.orderingKey })
+            publishJson: async (payload, attributes, publishMessageOptions?: MessageOptions) => {
+                await (await topic).publishMessage({ ...publishMessageOptions, attributes, json: payload })
             },
             registerHandler: async handler => {
                 const sub = await subscription;

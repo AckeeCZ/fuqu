@@ -1,17 +1,20 @@
 import { BareEvent, Event, FinishedMessageMetadata, FuQu, FuQuOptions, Handler, IncomingMessageMetadata } from './fuqu';
 import * as debug from 'debug';
+import { FuQuPubSubOptions } from './adapters/pubsub';
+import { MessageOptions } from '@google-cloud/pubsub/build/src/topic';
 export type FuQuCreator<O extends FuQuOptions<any, any>, Message> = <
     Payload extends object,
-    Attributes extends { [key: string]: string } = Record<any, any>
+    Attributes extends { [key: string]: string } = Record<any, any>,
+    PublishMessageOptions = O extends FuQuPubSubOptions ? MessageOptions : never
 >(
     client: any,
     topicName: string,
     options?: O
-) => FuQu<Payload, Attributes, Message>;
+) => FuQu<Payload, Attributes, Message, PublishMessageOptions>;
 
-export interface FuQuAdapter<P, A, M> {
+export interface FuQuAdapter<P, A, M, PMO> {
     name: string;
-    publishJson: (payload: P, attributes?: A, options?: {[key: string]: any}) => Promise<void>;
+    publishJson: (payload: P, attributes?: A, publishMessageOptions?: PMO) => Promise<void>;
     registerHandler: (handler: Handler<P, A, M>) => Promise<void> | void;
     ack: (message: M) => Promise<void> | void;
     nack: (message: M) => Promise<void> | void;
@@ -24,11 +27,11 @@ export interface FuQuAdapter<P, A, M> {
     ) => FinishedMessageMetadata<P, A>;
 }
 
-export const createFuQu = <P, A, M>(
-    adapter: FuQuAdapter<P, A, M>,
+export const createFuQu = <P, A, M, PMO>(
+    adapter: FuQuAdapter<P, A, M, PMO>,
     topicName: string,
     options?: FuQuOptions
-): FuQu<P, A, M> => {
+): FuQu<P, A, M, PMO> => {
     const debugLog = debug(`fuqu:${topicName}`);
     const log = (justEvent: BareEvent<P, A>) => {
         const event = justEvent as Event<P, A>; // avoid spread, fill missing manually
