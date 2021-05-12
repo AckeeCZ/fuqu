@@ -10,7 +10,7 @@ const adapters: {
     createFuQu: <P extends object, A extends Record<string, string> = Record<string, string>>(
         topicName: string,
         options?: FuQuOptions,
-    ) => Promise<FuQu<P, A, any>>;
+    ) => Promise<FuQu<P, A, any, any>>;
 }[] = [
     {
         name: 'Pub/Sub',
