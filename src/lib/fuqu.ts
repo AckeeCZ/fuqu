@@ -40,7 +40,7 @@ export type BareEvent<P, A> = (
 
 export type Handler<P, A, M> = (data: P, attributes: A, message: M) => Promise<void> | void;
 
-export interface FuQu<P, A, M, PO> {
+export interface FuQu<P, A, M, PO = {}> {
     /**
      * Publish a message
      * @param payload Object-like message payload
