@@ -46,7 +46,7 @@ export const fuQuPubSub: FuQuCreator<FuQuPubSubOptions, Message> = (pubSub: PubS
                 await (await topic).publishMessage({ ...publishMessageOptions, attributes, json: payload })
             },
             registerHandler: async (handler) => {
-                subscription = topic.then((t) =>
+                subscription = subscription ?? topic.then((t) =>
                     t
                         .subscription(topicName, options?.subscriptionOptions)
                         .get({ autoCreate: true })
