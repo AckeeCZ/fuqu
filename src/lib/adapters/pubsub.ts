@@ -1,5 +1,5 @@
-import { Message, PubSub } from '@google-cloud/pubsub';
 import { MessageOptions } from '@google-cloud/pubsub/build/src/topic';
+import { Message, PubSub, Subscription } from '@google-cloud/pubsub';
 import { FuQuOptions } from '../fuqu';
 import { createFuQu, FuQuCreator } from '../fuquAdapter';
 import { fuQuMemory } from './memory';
@@ -34,26 +34,29 @@ export const fuQuPubSub: FuQuCreator<FuQuPubSubOptions, Message> = (pubSub: PubS
             }
             return x[0];
         });
-    const subscription = topic.then(topic =>
-        topic
-            .subscription(topicName, options?.subscriptionOptions)
-            .get({ autoCreate: true })
-            .then(x => {
-                if (options?.subscriptionOptions) {
-                    x[0].setOptions(options?.subscriptionOptions);
-                }
-                return x[0];
-            })
-    );
+    let subscription: Promise<Subscription> | undefined;
+
     return createFuQu(
         {
             name: 'pubsub',
-            isAlive: () => subscription.then(s => s.isOpen),
-            close: () => subscription.then(s => s.close()),
+            isAlive: () =>
+                subscription ? subscription.then((s) => s.isOpen) : topic.then((t) => t.get()).then((t) => !!t[0]),
+            close: () => (subscription ? subscription.then((s) => s.close()) : Promise.resolve()),
             publishJson: async (payload, attributes, publishMessageOptions?: MessageOptions) => {
                 await (await topic).publishMessage({ ...publishMessageOptions, attributes, json: payload })
             },
-            registerHandler: async handler => {
+            registerHandler: async (handler) => {
+                subscription = subscription ?? topic.then((t) =>
+                    t
+                        .subscription(topicName, options?.subscriptionOptions)
+                        .get({ autoCreate: true })
+                        .then((x) => {
+                            if (options?.subscriptionOptions) {
+                                x[0].setOptions(options?.subscriptionOptions);
+                            }
+                            return x[0];
+                        })
+                );
                 const sub = await subscription;
                 sub.on('message', async (message: Message) => {
                     const payload = JSON.parse(message.data.toString());

@@ -99,6 +99,11 @@ for (const adapter of adapters) {
                 expect(await fuq.isAlive(0)).toBe(false);
                 await fuq.close().catch();
             });
+            test('Is alive even without topic', async () => {
+                const fuq = await adapter.createFuQu('fuqu-alive');
+                expect(await fuq.isAlive()).toBe(true);
+                await fuq.close().catch();
+            });
         });
         describe('Logs events', () => {
             const message = { hello: 'world' };
