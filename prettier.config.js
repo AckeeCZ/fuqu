@@ -1,1 +1,7 @@
-module.exports = require('prettier-config-ackee/backend');
+module.exports = {
+    trailingComma: 'es5',
+    tabWidth: 2,
+    semi: false,
+    singleQuote: true,
+    arrowParens: 'avoid',
+};

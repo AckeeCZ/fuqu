@@ -4,7 +4,3 @@ services:
     image: "messagebird/gcloud-pubsub-emulator:latest"
     ports:
         - "8681:8681"
-  rabbit:
-    image: "rabbitmq:3"
-    ports:
-        - "5672:5672"
