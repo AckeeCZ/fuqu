@@ -8,10 +8,17 @@ interface PubSubLike<MessageOptions> {
     removeAllListeners: () => any
   }
 }
-
 type PubSubLikeClass<I, MessageOptions> = { new (config: I): PubSubLike<MessageOptions> }
 
-export const FuQu = <I, MessageOptions>(PubSub: PubSubLikeClass<I, MessageOptions>, config: I) => {
+interface MessageLike {
+  ack(): void;
+  nack(): void;
+}
+type ClassType<InstanceType> = { new (...args: any[]): InstanceType }
+
+type MessageHandler<M extends MessageLike> = (message: M) => void
+
+export const FuQu = <I, MessageOptions, Message extends MessageLike>(PubSub: PubSubLikeClass<I, MessageOptions>, config: I, Message: ClassType<Message>) => {
   const createPublisher = (topicName: string) => {
     const client = new PubSub(config)
     const topic = client.topic(topicName)
@@ -19,7 +26,7 @@ export const FuQu = <I, MessageOptions>(PubSub: PubSubLikeClass<I, MessageOption
       publish: topic.publishMessage.bind(topic)
     }
   }
-  const createSubscriber = (subscriptionName: string, handler: any) => {
+  const createSubscriber = (subscriptionName: string, handler: MessageHandler<Message>) => {
     const client = new PubSub(config)
     const subscription = client.subscription(subscriptionName)
     subscription.on('message', handler)

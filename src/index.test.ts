@@ -6,7 +6,7 @@ process.env.PUBSUB_PROJECT_ID = 'fuqu'
 jest.setTimeout(15 * 1e3)
 
 describe('Emulator', () => {
-  const fuQu = FuQu(PubSub, {})
+  const fuQu = FuQu(PubSub, {}, Message)
   const client = new PubSub()
   test('Publish message: payload, attributes, messageId', async () => {
     const TOPIC = 'pub'
@@ -37,7 +37,7 @@ describe('Emulator', () => {
 
     const message: Message = await new Promise(async resolve => {
       [messageId] = await topic.publishMessage({ json: PAYLOAD, attributes: ATTRIBUTES })
-      const subscriber = fuQu.createSubscriber(SUB, (message: any) => {
+      const subscriber = fuQu.createSubscriber(SUB, message => {
         message.ack()
         resolve(message)
         subscriber.clear()
