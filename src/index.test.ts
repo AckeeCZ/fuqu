@@ -18,7 +18,7 @@ describe('Emulator', () => {
 
     const publisher = fuQu.createPublisher(TOPIC)
     const message: Message = await new Promise(async resolve => {
-      messageId = await publisher.publish(PAYLOAD, ATTRIBUTES)
+      [messageId] = await publisher.publish({ json: PAYLOAD, attributes: ATTRIBUTES })
       subscription.on('message', resolve)
     })
     message.ack()
@@ -36,7 +36,7 @@ describe('Emulator', () => {
     const { topic } = await createTopicAndSub(client, TOPIC, SUB)
 
     const message: Message = await new Promise(async resolve => {
-      messageId = await topic.publishJSON(PAYLOAD, ATTRIBUTES)
+      [messageId] = await topic.publishMessage({ json: PAYLOAD, attributes: ATTRIBUTES })
       const subscriber = fuQu.createSubscriber(SUB, (message: any) => {
         message.ack()
         resolve(message)
