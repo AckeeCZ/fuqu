@@ -12,9 +12,6 @@ interface PubSubLike<MessageOptions, SubscriptionOptions> {
   }
 }
 type SubscriptionOptionsLike = { batching: { maxMessages?: number } }
-type PubSubLikeClass<I, MessageOptions, SubscriptionOptions> = {
-  new (config: I): PubSubLike<MessageOptions, SubscriptionOptions>
-}
 
 interface MessageLike {
   ack(): void
@@ -25,18 +22,16 @@ type ClassType<InstanceType> = { new (...args: any[]): InstanceType }
 type MessageHandler<M extends MessageLike> = (message: M) => void
 
 export const FuQu = <
-  I,
   MessageOptions,
   SubscriptionOptions extends SubscriptionOptionsLike,
   Message extends MessageLike
 >(
-  PubSub: PubSubLikeClass<I, MessageOptions, SubscriptionOptions>,
-  config: I,
+  createClient: () => PubSubLike<MessageOptions, SubscriptionOptions>,
   Message: ClassType<Message>,
   defaultSubscriptionOptions?: SubscriptionOptions
 ) => {
   const createPublisher = (topicName: string) => {
-    const client = new PubSub(config)
+    const client = createClient()
     const topic = client.topic(topicName)
     return {
       publish: topic.publishMessage.bind(topic),
@@ -47,7 +42,7 @@ export const FuQu = <
     handler: MessageHandler<Message>,
     additionalSubscriptionOptions?: SubscriptionOptions
   ) => {
-    const client = new PubSub(config)
+    const client = createClient()
     const subscription = client.subscription(subscriptionName, Object.assign({}, defaultSubscriptionOptions, additionalSubscriptionOptions))
     subscription.on('message', handler)
     return {

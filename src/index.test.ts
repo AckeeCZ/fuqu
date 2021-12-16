@@ -6,7 +6,7 @@ process.env.PUBSUB_PROJECT_ID = 'fuqu'
 jest.setTimeout(15 * 1e3)
 
 describe('Emulator', () => {
-  const fuQu = FuQu(PubSub, {}, Message)
+  const fuQu = FuQu(() => new PubSub(), Message)
   const client = new PubSub()
   test('Publish message: payload, attributes, messageId', async () => {
     const TOPIC = 'pub'
