@@ -82,6 +82,73 @@ describe('Options', () => {
   })
 })
 
+describe('Reconnecting', () => {
+  let handlers: any[] = []
+  let messages: any[] = []
+  let subscribersHooked = 0
+  let consumerMutex = false
+  const consume: any = async () => {
+    if (messages.length === 0 || consumerMutex) return
+    consumerMutex = true
+    const m = messages.pop()
+    for (const h of handlers) {
+      await h(m)
+    }
+    consumerMutex = false
+    return consume()
+  }
+  const pubsubSerialMockFactory = () => {
+    return {
+      topic: (_: string) => ({
+        publishMessage: async (options: any) => {
+          messages.push(options)
+          consume()
+          return [''] as [string]
+        }
+      }),
+      subscription: (_: string) => ({
+        on: (_: string, listener: (...args: any[]) => void) => {
+          subscribersHooked++
+          handlers.push(listener)
+        },
+        removeAllListeners: () => {
+          handlers = []
+        },
+      }),
+    }
+  }
+  const RECONNECT_TIMEOUT_MILLIS = 50
+  const fuQu = FuQu<any, any, any>(pubsubSerialMockFactory, null as any, { reconnectAfterMillis: RECONNECT_TIMEOUT_MILLIS })
+  beforeEach(() => {
+    handlers = []
+    messages = []
+    subscribersHooked = 0
+  })
+  test('Does not reconnect while handling messages', async () => {
+    const PROCESSING_MILLIS = 50
+    const MESSAGE_COUNT = 5
+    fuQu.createSubscriber('', async () => {
+      await new Promise(resolve => setTimeout(resolve, PROCESSING_MILLIS))
+    })
+    const p = fuQu.createPublisher('')
+    for (let i = 0; i < MESSAGE_COUNT; i++) {
+      p.publish({})
+    }
+    await new Promise(resolve => setTimeout(resolve, PROCESSING_MILLIS * MESSAGE_COUNT))
+    expect(subscribersHooked).toBe(1)
+  })
+  test('Does keep reconnecting when dry', async () => {
+    const MESSAGE_COUNT = 3
+    fuQu.createSubscriber('', () => {})
+    const p = fuQu.createPublisher('')
+    for (let i = 0; i < MESSAGE_COUNT; i++) {
+      p.publish({})
+      await new Promise(resolve => setTimeout(resolve, RECONNECT_TIMEOUT_MILLIS))
+    }
+    expect(subscribersHooked).toBe(MESSAGE_COUNT)
+  })
+})
+
 const createTopicAndSub = async (
   client: PubSub,
   topicName: string,
