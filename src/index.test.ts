@@ -1,4 +1,4 @@
-import { Message, PubSub, Subscription } from '@google-cloud/pubsub'
+import { Message, PubSub } from '@google-cloud/pubsub'
 import { FuQu } from './index'
 
 process.env.PUBSUB_EMULATOR_HOST = 'localhost:8681'
