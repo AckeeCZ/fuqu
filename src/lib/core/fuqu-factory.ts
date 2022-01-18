@@ -25,7 +25,10 @@ export const FuQu: FuQuFactory = (
       const client = createClient()
       const topic = client.topic(topicName)
       return {
-        publish: topic.publishMessage.bind(topic),
+        publish: async (options) => {
+          const result = await topic.publishMessage(options)
+          return String(result)
+        },
       }
     },
     createSubscriber: (

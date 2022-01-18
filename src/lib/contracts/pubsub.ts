@@ -1,6 +1,6 @@
 export interface PubSubLike<MessageOptions, SubscriptionOptions> {
   topic: (name: string) => {
-    publishMessage: (options: MessageOptions) => Promise<[string]>
+    publishMessage: (options: MessageOptions) => any
   }
   subscription: (
     name: string,

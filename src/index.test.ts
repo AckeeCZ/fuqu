@@ -18,13 +18,13 @@ describe('Emulator', () => {
 
     const publisher = fuQu.createPublisher(TOPIC)
     const message: Message = await new Promise(async resolve => {
-      [messageId] = await publisher.publish({ json: PAYLOAD, attributes: ATTRIBUTES })
+      messageId = await publisher.publish({ json: PAYLOAD, attributes: ATTRIBUTES })
       subscription.on('message', resolve)
     })
     message.ack()
     expect(message.attributes).toMatchObject(ATTRIBUTES)
     expect(JSON.parse(message.data.toString())).toMatchObject(PAYLOAD)
-    expect(messageId).toBeTruthy() // ids not safely comparable on emulator
+    expect(messageId).toBe(message.id)
     subscription.removeAllListeners()
   })
   test('Receive message: payload, attributes, messageId', async () => {
@@ -36,7 +36,8 @@ describe('Emulator', () => {
     const { topic } = await createTopicAndSub(client, TOPIC, SUB)
 
     const message: Message = await new Promise(async resolve => {
-      [messageId] = await topic.publishMessage({ json: PAYLOAD, attributes: ATTRIBUTES })
+      // @ts-expect-error wrong types, see https://github.com/googleapis/nodejs-pubsub/pull/1441
+      messageId = await topic.publishMessage({ json: PAYLOAD, attributes: ATTRIBUTES })
       const subscriber = fuQu.createSubscriber(SUB, message => {
         message.ack()
         resolve(message)
@@ -45,7 +46,8 @@ describe('Emulator', () => {
     })
     expect(message.attributes).toMatchObject(ATTRIBUTES)
     expect(JSON.parse(message.data.toString())).toMatchObject(PAYLOAD)
-    expect(messageId).toBeTruthy() // ids not safely comparable on emulator
+    expect(messageId).toBe(message.id)
+
   })
 })
 
