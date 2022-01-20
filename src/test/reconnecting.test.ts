@@ -10,8 +10,9 @@ test('Does not reconnect while handling messages', async t => {
   const fuQu = FuQu(pubSubMock.factory, null as any, { reconnectAfterMillis: RECONNECT_TIMEOUT_MILLIS, batching: { maxMessages: 1 } })
 
   const MESSAGE_COUNT = 3
-  fuQu.createSubscriber('', async () => {
+  fuQu.createSubscriber('', async m => {
     await new Promise(resolve => setTimeout(resolve, RECONNECT_TIMEOUT_MILLIS))
+    m.ack()
   })
   const p = fuQu.createPublisher('')
   for (let i = 0; i < MESSAGE_COUNT; i++) {
@@ -21,11 +22,21 @@ test('Does not reconnect while handling messages', async t => {
   t.is(pubSubMock.timesHooked, 1) // initial
 })
 
+test('Does not reconnect waiting for ack/nack', async t => {
+  const pubSubMock = pubsubSerialMockFactory()
+  const fuQu = FuQu(pubSubMock.factory, null as any, { reconnectAfterMillis: RECONNECT_TIMEOUT_MILLIS, batching: { maxMessages: 1 } })
+  fuQu.createSubscriber('', () => {})
+  const p = fuQu.createPublisher('')
+  await p.publish({})
+  await new Promise(resolve => setTimeout(resolve, RECONNECT_TIMEOUT_MILLIS * 3))
+  t.is(pubSubMock.timesHooked, 1) // initial
+})
+
 test('Does keep reconnecting when dry', async t => {
   const pubSubMock = pubsubSerialMockFactory()
   const fuQu = FuQu(pubSubMock.factory, null as any, { reconnectAfterMillis: RECONNECT_TIMEOUT_MILLIS, batching: { maxMessages: 1 } })
   const MESSAGE_COUNT = 3
-  fuQu.createSubscriber('', () => {})
+  fuQu.createSubscriber('', m => m.ack())
   const p = fuQu.createPublisher('')
   for (let i = 0; i < MESSAGE_COUNT; i++) {
     await p.publish({})
@@ -45,7 +56,9 @@ const pubsubSerialMockFactory = () => {
     consumerSemaphore++
     const m = messages.pop()
     for (const h of handlers) {
-      await h(m)
+      await new Promise(resolve => {
+        h(Object.assign(m, { ack: resolve, nack: resolve }))
+      })
     }
     consumerSemaphore--
     return consume()

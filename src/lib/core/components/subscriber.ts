@@ -1,8 +1,13 @@
-import { MessageLike, PubSubLike, SubscriptionLike } from "../../contracts/pubsub"
+import {
+  MessageLike,
+  PubSubLike,
+  SubscriptionLike,
+} from '../../contracts/pubsub'
 
 export type FuQuSubscriberOptions = { reconnectAfterMillis: number }
-export type MessageHandler<M extends MessageLike> = (message: M) => void | Promise<void>
-
+export type MessageHandler<M extends MessageLike> = (
+  message: M
+) => void | Promise<void>
 
 export class Subscriber {
   private subscription?: SubscriptionLike
@@ -35,13 +40,32 @@ export class Subscriber {
 
   private hookHandler() {
     this.subscription?.on('message', async message => {
-      this.messageInProcessingCount++
-      await this.handler(message)
-      this.messageInProcessingCount--
-      if (this.isDry()) {
-        this.rescheduleTimer()
-      }
+      const originalAck = message.ack.bind(message)
+      const originalNack = message.nack.bind(message)
+      this.messageIn()
+      const patchedMessage = Object.assign(message, {
+        ack: () => {
+          originalAck()
+          this.messageOut()
+        },
+        nack: () => {
+          originalNack()
+          this.messageOut()
+        },
+      })
+      this.handler(patchedMessage)
     })
+  }
+
+  private messageIn() {
+    this.messageInProcessingCount++
+  }
+
+  private messageOut() {
+    this.messageInProcessingCount--
+    if (this.isDry()) {
+      this.rescheduleTimer()
+    }
   }
 
   private rescheduleTimer() {
