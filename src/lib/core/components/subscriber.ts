@@ -3,8 +3,9 @@ import {
   PubSubLike,
   SubscriptionLike,
 } from '../../contracts/pubsub'
+import { FuQuOptions } from '../fuqu-factory'
 
-export type FuQuSubscriberOptions = { reconnectAfterMillis: number }
+export type FuQuSubscriberOptions = { reconnectAfterMillis?: number }
 export type MessageHandler<M extends MessageLike> = (
   message: M
 ) => void | Promise<void>
@@ -14,42 +15,40 @@ export class Subscriber {
   private messageInProcessingCount = 0
   private timeout: NodeJS.Timeout | null = null
   private reconnectTimeoutMillis = 0
-  private pubsubSubscriptionOptions: any = {}
   constructor(
     private createPubSubClient: () => PubSubLike<any, any>,
     private subscriptionName: string,
     private handler: MessageHandler<any>,
-    subscriptionOptions: FuQuSubscriberOptions
+    private options: FuQuOptions
   ) {
-    const {
-      reconnectAfterMillis: reconnectAfter,
-      ...pubsubSubscriptionOptions
-    } = subscriptionOptions
-    this.reconnectTimeoutMillis = reconnectAfter
-    this.pubsubSubscriptionOptions = pubsubSubscriptionOptions
+    this.reconnectTimeoutMillis = options.reconnectAfterMillis ?? 0
+    this.options?.logger?.initializedSubscriber?.(subscriptionName, options)
     this.setup()
   }
 
   private setup() {
     this.subscription = this.createPubSubClient().subscription(
       this.subscriptionName,
-      this.pubsubSubscriptionOptions
+      this.options
     )
     this.hookHandler()
   }
 
   private hookHandler() {
     this.subscription?.on('message', async message => {
+      this.options?.logger?.receivedMessage?.(this.subscriptionName, message)
       const originalAck = message.ack.bind(message)
       const originalNack = message.nack.bind(message)
       this.messageIn()
       const patchedMessage = Object.assign(message, {
         ack: () => {
           originalAck()
+          this.options?.logger?.ackMessage?.(this.subscriptionName, message)
           this.messageOut()
         },
         nack: () => {
           originalNack()
+          this.options?.logger?.nackMessage?.(this.subscriptionName, message)
           this.messageOut()
         },
       })
@@ -78,6 +77,7 @@ export class Subscriber {
 
   private refresh() {
     if (!this.isDry()) return
+    this.options?.logger?.subscriberReconnected?.(this.subscriptionName, this.options)
     this.clear()
     this.setup()
   }

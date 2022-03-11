@@ -2,6 +2,9 @@ import { MessageLike, PubSubLike, SubscriptionOptionsLike } from "../contracts/p
 import { FuQuInstance } from "./fuqu";
 import { FuQuSubscriberOptions, Subscriber } from "./components/subscriber";
 import { ClassType } from "../utils/type-utils";
+import { Logger } from "../contracts/logger";
+
+export type FuQuOptions = FuQuSubscriberOptions & { logger?: Logger<any, any, any> }
 
 export type FuQuFactory = <
   MessageOptions,
@@ -10,7 +13,7 @@ export type FuQuFactory = <
 >(
   createClient: () => PubSubLike<MessageOptions, SubscriptionOptions>,
   Message: ClassType<Message>,
-  defaultSubscriptionOptions?: SubscriptionOptions & FuQuSubscriberOptions
+  options?: SubscriptionOptions & FuQuOptions
 ) => FuQuInstance<MessageOptions, SubscriptionOptions, Message>
 
 
@@ -18,15 +21,17 @@ export type FuQuFactory = <
 export const FuQu: FuQuFactory = (
   createClient,
   _Message,
-  defaultSubscriptionOptions
+  options
 ) => {
   return {
     createPublisher: topicName => {
       const client = createClient()
       const topic = client.topic(topicName)
+      options?.logger?.initializedPublisher?.(topicName)
       return {
-        publish: async (options) => {
-          const result = await topic.publishMessage(options)
+        publish: async (messageOptions) => {
+          options?.logger?.publishedMessage?.(topicName, messageOptions)
+          const result = await topic.publishMessage(messageOptions)
           return String(result)
         },
       }
@@ -42,7 +47,7 @@ export const FuQu: FuQuFactory = (
         handler,
         Object.assign(
           {},
-          defaultSubscriptionOptions,
+          options,
           additionalSubscriptionOptions
         )
       )

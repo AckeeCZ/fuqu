@@ -11,7 +11,7 @@ export interface PubSubLike<MessageOptions, SubscriptionOptions> {
   }
 }
 
-export type SubscriptionOptionsLike = { batching: { maxMessages?: number } }
+export type SubscriptionOptionsLike = { batching?: { maxMessages?: number } }
 
 export interface MessageLike {
   ack(): void
