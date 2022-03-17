@@ -5,17 +5,15 @@
   "scripts": {
     "test": "ava",
     "build": "tsc -p .",
+    "prepare": "npm run build",
     "lint": "tslint -p . --force"
   },
+  "files": ["dist", "src", "!test"],
   "version": "2.1.5",
-  "author": "Stefan Prokop <stefan.prokop@ackee.cz>",
-  "contributors": [
-    "Jaroslav Šmolík <grissius@gmail.com>"
-  ],
+  "author": "Jaroslav Šmolík <grissius@gmail.com>",
+  "contributors": [],
   "license": "MIT",
-  "dependencies": {
-    "debug": "^4.3.3"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@google-cloud/pubsub": "^2.18.4",
     "@types/debug": "^4.1.7",
