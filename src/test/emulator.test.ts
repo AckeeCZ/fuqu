@@ -127,6 +127,35 @@ test('Logger works', async t => {
   t.deepEqual(cache.subscriberReconnected, [SUB, Object.assign(OPTIONS, { ackDeadline: 42 })])
 })
 
+test('Json parsing', async t => {
+  const fuquWithJson = FuQu(() => new PubSub(), { parseJson: true })
+  const fuquWithoutJson = FuQu(() => new PubSub(), { parseJson: false })
+  const TOPIC = 'parse-test-topic'
+  const SUB = 'parse-test-sub'
+  const PAYLOAD = { fak: 'ju', indeed: true }
+  await createTopicAndSub(client, TOPIC, SUB)
+
+  fuQu.createPublisher(TOPIC).publish({ json: PAYLOAD })
+  await new Promise<void>(resolve => {
+    const sub = fuquWithJson.createSubscriber(SUB, m => {
+      t.like(m.jsonData, PAYLOAD)
+      m.nack()
+      sub.clear()
+      resolve()
+    })
+  })
+  await new Promise<void>(resolve => {
+    const sub = fuquWithoutJson.createSubscriber(SUB, m => {
+      t.deepEqual(m.jsonData, {})
+      t.deepEqual(m.data.toString(), JSON.stringify(PAYLOAD))
+      m.nack()
+      sub.clear()
+      resolve()
+    })
+  })
+})
+
+
 const createTopicAndSub = async (
   client: PubSub,
   topicName: string,

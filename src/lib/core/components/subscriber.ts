@@ -4,10 +4,11 @@ import {
   SubscriptionLike,
 } from '../../contracts/pubsub'
 import { FuQuOptions } from '../fuqu-factory'
+import { bufferParseJson } from './helpers'
 
-export type FuQuSubscriberOptions = { reconnectAfterMillis?: number }
+export type FuQuSubscriberOptions = { reconnectAfterMillis?: number, parseJson?: boolean }
 export type MessageHandler<M extends MessageLike> = (
-  message: M
+  message: M & { jsonData: any }
 ) => void | Promise<void>
 
 export class Subscriber {
@@ -36,23 +37,30 @@ export class Subscriber {
 
   private hookHandler() {
     this.subscription?.on('message', async (message: MessageLike) => {
+      const patchedMessage = this.patchMessage(message)
       this.options?.logger?.receivedMessage?.(this.subscriptionName, message)
-      const originalAck = message.ack.bind(message)
-      const originalNack = message.nack.bind(message)
       this.messageIn()
-      const patchedMessage = Object.assign(message, {
-        ack: () => {
-          originalAck()
-          this.options?.logger?.ackMessage?.(this.subscriptionName, message)
-          this.messageOut()
-        },
-        nack: () => {
-          originalNack()
-          this.options?.logger?.nackMessage?.(this.subscriptionName, message)
-          this.messageOut()
-        },
-      })
       this.handler(patchedMessage)
+    })
+  }
+
+  private patchMessage(message: MessageLike) {
+    const originalAck = message.ack.bind(message)
+    const originalNack = message.nack.bind(message)
+    const jsonPatchedMessage = Object.assign(message, {
+      jsonData: this.options.parseJson ? bufferParseJson(message.data) : {}
+    })
+    return Object.assign(jsonPatchedMessage, {
+      ack: () => {
+        originalAck()
+        this.options?.logger?.ackMessage?.(this.subscriptionName, jsonPatchedMessage)
+        this.messageOut()
+      },
+      nack: () => {
+        originalNack()
+        this.options?.logger?.nackMessage?.(this.subscriptionName, jsonPatchedMessage)
+        this.messageOut()
+      },
     })
   }
 
