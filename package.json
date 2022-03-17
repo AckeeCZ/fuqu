@@ -8,8 +8,12 @@
     "prepare": "npm run build",
     "lint": "tslint -p . --force"
   },
-  "files": ["dist", "src", "!test"],
-  "version": "2.1.5",
+  "files": [
+    "dist",
+    "src",
+    "!test"
+  ],
+  "version": "3.0.0-beta.0",
   "author": "Jaroslav Šmolík <grissius@gmail.com>",
   "contributors": [],
   "license": "MIT",
