@@ -5,12 +5,11 @@ import { MessageLike, SubscriptionOptionsLike } from "../contracts/pubsub";
 export type FuQuInstance<
   MessageOptions,
   SubscriptionOptions extends SubscriptionOptionsLike,
-  Message extends MessageLike
 > = {
   createPublisher: (topicName: string) => FuQuPublisher<MessageOptions>
-  createSubscriber: (
+  createSubscriber: <M extends MessageLike = MessageLike>(
     subscriptionName: string,
-    handler: MessageHandler<Message>,
+    handler: MessageHandler<M>,
     additionalSubscriptionOptions?: SubscriptionOptions & FuQuSubscriberOptions
   ) => Subscriber
 }

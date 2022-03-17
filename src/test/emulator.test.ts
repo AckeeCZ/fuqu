@@ -6,7 +6,7 @@ import { Logger } from '../lib/contracts/logger'
 process.env.PUBSUB_EMULATOR_HOST = 'localhost:8681'
 process.env.PUBSUB_PROJECT_ID = 'fuqu'
 
-const fuQu = FuQu(() => new PubSub(), Message)
+const fuQu = FuQu(() => new PubSub())
 const client = new PubSub()
 
 test('Publish message: payload, attributes, messageId', async t => {
@@ -40,7 +40,7 @@ test('Receive message: payload, attributes, messageId', async t => {
   const message: Message = await new Promise(async resolve => {
     // @ts-expect-error wrong types, see https://github.com/googleapis/nodejs-pubsub/pull/1441
     messageId = await topic.publishMessage({ json: PAYLOAD, attributes: ATTRIBUTES })
-    const subscriber = fuQu.createSubscriber(SUB, message => {
+    const subscriber = fuQu.createSubscriber(SUB, (message: Message) => {
       message.ack()
       resolve(message)
       subscriber.clear()
@@ -75,7 +75,7 @@ test('Logger works', async t => {
     },
     reconnectAfterMillis: 250
   }
-  const fuQu = FuQu(() => new PubSub(), Message, OPTIONS)
+  const fuQu = FuQu(() => new PubSub(), OPTIONS)
 
   const promises: any = {}
   const resolves: any = {}

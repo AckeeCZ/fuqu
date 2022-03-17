@@ -7,7 +7,7 @@ import { SubscriptionOptionsLike } from '../lib/contracts/pubsub'
 const RECONNECT_TIMEOUT_MILLIS = 50
 test('Does not reconnect while handling messages', async t => {
   const pubSubMock = pubsubSerialMockFactory()
-  const fuQu = FuQu(pubSubMock.factory, null as any, { reconnectAfterMillis: RECONNECT_TIMEOUT_MILLIS, batching: { maxMessages: 1 } })
+  const fuQu = FuQu(pubSubMock.factory, { reconnectAfterMillis: RECONNECT_TIMEOUT_MILLIS, batching: { maxMessages: 1 } })
 
   const MESSAGE_COUNT = 3
   fuQu.createSubscriber('', async m => {
@@ -24,7 +24,7 @@ test('Does not reconnect while handling messages', async t => {
 
 test('Does not reconnect waiting for ack/nack', async t => {
   const pubSubMock = pubsubSerialMockFactory()
-  const fuQu = FuQu(pubSubMock.factory, null as any, { reconnectAfterMillis: RECONNECT_TIMEOUT_MILLIS, batching: { maxMessages: 1 } })
+  const fuQu = FuQu(pubSubMock.factory, { reconnectAfterMillis: RECONNECT_TIMEOUT_MILLIS, batching: { maxMessages: 1 } })
   fuQu.createSubscriber('', () => {})
   const p = fuQu.createPublisher('')
   await p.publish({})
@@ -34,7 +34,7 @@ test('Does not reconnect waiting for ack/nack', async t => {
 
 test('Does keep reconnecting when dry', async t => {
   const pubSubMock = pubsubSerialMockFactory()
-  const fuQu = FuQu(pubSubMock.factory, null as any, { reconnectAfterMillis: RECONNECT_TIMEOUT_MILLIS, batching: { maxMessages: 1 } })
+  const fuQu = FuQu(pubSubMock.factory, { reconnectAfterMillis: RECONNECT_TIMEOUT_MILLIS, batching: { maxMessages: 1 } })
   const MESSAGE_COUNT = 3
   fuQu.createSubscriber('', m => m.ack())
   const p = fuQu.createPublisher('')

@@ -16,6 +16,13 @@ export type SubscriptionOptionsLike = { batching?: { maxMessages?: number } }
 export interface MessageLike {
   ack(): void
   nack(): void
+  attributes: Record<string, string>
+  data: Buffer
+  deliveryAttempt: number
+  id: string
+  length: number
+  orderingKey?: string
+  publishTime: Date
 }
 
 export type SubscriptionLike = ReturnType<PubSubLike<any, any>['subscription']>

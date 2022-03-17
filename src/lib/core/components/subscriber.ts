@@ -35,7 +35,7 @@ export class Subscriber {
   }
 
   private hookHandler() {
-    this.subscription?.on('message', async message => {
+    this.subscription?.on('message', async (message: MessageLike) => {
       this.options?.logger?.receivedMessage?.(this.subscriptionName, message)
       const originalAck = message.ack.bind(message)
       const originalNack = message.nack.bind(message)
