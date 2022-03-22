@@ -38,7 +38,6 @@ test('Receive message: payload, attributes, messageId', async t => {
   const { topic } = await createTopicAndSub(client, TOPIC, SUB)
 
   const message: Message = await new Promise(async resolve => {
-    // @ts-expect-error wrong types, see https://github.com/googleapis/nodejs-pubsub/pull/1441
     messageId = await topic.publishMessage({ json: PAYLOAD, attributes: ATTRIBUTES })
     const subscriber = fuQu.createSubscriber(SUB, (message: Message) => {
       message.ack()
