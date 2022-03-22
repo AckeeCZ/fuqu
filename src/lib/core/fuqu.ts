@@ -1,12 +1,13 @@
 import { FuQuSubscriberOptions, MessageHandler, Subscriber } from "./components/subscriber";
 import { FuQuPublisher } from "./components/publisher";
-import { MessageLike, SubscriptionOptionsLike } from "../contracts/pubsub";
+import { MessageLike, SubscriptionOptionsLike, MessageOptionsLike } from "../contracts/pubsub";
+import { OverrideJsonType } from "./components/helpers";
 
 export type FuQuInstance<
-  MessageOptions,
+  MessageOptions extends MessageOptionsLike,
   SubscriptionOptions extends SubscriptionOptionsLike,
 > = {
-  createPublisher: (topicName: string) => FuQuPublisher<MessageOptions>
+  createPublisher: <JsonType extends any = any>(topicName: string) => FuQuPublisher<OverrideJsonType<MessageOptions, JsonType>>
   createSubscriber: <M extends MessageLike = MessageLike>(
     subscriptionName: string,
     handler: MessageHandler<M>,
