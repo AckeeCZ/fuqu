@@ -13,7 +13,7 @@
     "src",
     "!test"
   ],
-  "version": "3.0.0-beta.2",
+  "version": "3.0.0-beta.3",
   "author": "Jaroslav Šmolík <grissius@gmail.com>",
   "contributors": [],
   "license": "MIT",
