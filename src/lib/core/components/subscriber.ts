@@ -7,7 +7,7 @@ import { FuQuOptions } from '../fuqu-factory'
 import { bufferParseJson } from './helpers'
 
 export type FuQuSubscriberOptions = { reconnectAfterMillis?: number, parseJson?: boolean }
-export type MessageHandler<M extends MessageLike> = (
+export type MessageHandler<M extends MessageLike = MessageLike> = (
   message: M & { jsonData: any }
 ) => void | Promise<void>
 
