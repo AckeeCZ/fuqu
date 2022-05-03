@@ -7,5 +7,5 @@ export interface Logger<MessageOptions, SubscriptionOptions, Message> {
   subscriberReconnected?: (subscriptionName: string, options: SubscriptionOptions & FuQuSubscriberOptions) => void,
   receivedMessage?: (subscriptionName: string, message: Message) => void,
   ackMessage?: (subscriptionName: string, message: Message) => void,
-  nackMessage?: (subscriptionName: string, message: Message) => void,
+  nackMessage?: (subscriptionName: string, message: Message, reason: any) => void,
 }

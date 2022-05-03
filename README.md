@@ -84,6 +84,13 @@ Implement your own logger to log events in the format you need:
 When you are working with JSON messages, it might be convenient to access the structured JSON in logger events and handler. To avoid repeated parsing from buffer, use option `parseJson`. This will make FuQu parse the JSON for you and the output is available in `message.jsonData`.
 
 When the option is disabled or parsing fails, the field will contain empty object `{}`.
+
+#### Reason `nack`
+
+Since `nack` often means that processing failed due to an error occurrence, having the ability to send the `nack` reason proves convenient for logging.
+
+FuQu already needs to patch both `ack` and `nack` functions to implement tracking of processed messages for reconnecting. That is why we decided to alter `nack` function to include a reason. It is a required argument, but you can pass in `null` (usually, you would supply an error, message etc.). This reason now pops up as an argument in your logger.
+
 ### Rude mode
 If you want to have optimal FuQu experience, use imports from `fuqu/dist/real`.
 
