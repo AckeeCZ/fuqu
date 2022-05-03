@@ -80,6 +80,30 @@ Implement your own logger to log events in the format you need:
 - `ackMessage`
 - `nackMessage`
 
+> ⚠️ **Massive logs, confidential data alert** Be mindful, that some hooks (e.g. `ackMessage`) are provided the original Pub/Sub message. When it is logged directly, it can result in extremely large output (JSON representation of `Buffer`) and credential info (link to initialized Pub/Sub subscriber). Only log explicit fields to avoid these issues. See the snippet.
+
+```ts
+// BAD
+const dangerousCarelessLogger = {
+  ackMessage: (subscriptionName, message) =>
+    logger.info({ message, subscriptionName }, 'acked message'),
+};
+
+// GOOD
+const politePersonLogger = {
+  ackMessage: (subscriptionName, message) =>
+    logger.info(
+      {
+        subscriptionName,
+        id: message.id,
+        length: message.length,
+        entityId: message.jsonData.entityId,
+      },
+    'acked message'
+    ),
+};
+```
+
 #### JSON parsing
 When you are working with JSON messages, it might be convenient to access the structured JSON in logger events and handler. To avoid repeated parsing from buffer, use option `parseJson`. This will make FuQu parse the JSON for you and the output is available in `message.jsonData`.
 
