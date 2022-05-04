@@ -16,3 +16,5 @@ export type OverrideJsonType<MessageOptions extends MessageOptionsLike, CustomTy
     IsAny<CustomType> extends true
         ? MessageOptions
         : AssertExtends<Omit<MessageOptions, 'json'> & { json: CustomType }, MessageOptions>
+
+export type ReplaceAttributes<T, U> = Omit<T, keyof U> & U

@@ -26,3 +26,19 @@ test('Publish: JSON interface', async t => {
   } catch {}
   t.pass()
 })
+
+test('Subscribe: ack / nack', async t => {
+  const fuQu = FuQu(() => new PubSub())
+  try {
+    fuQu.createSubscriber('', m => {
+      m.ack()
+      // @ts-expect-error must provide reason
+      m.nack()
+      // ok
+      m.nack(null)
+      m.nack(new Error())
+      m.nack('...')
+    })
+  } catch {}
+  t.pass()
+})

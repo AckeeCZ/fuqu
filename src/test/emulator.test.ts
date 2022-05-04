@@ -2,6 +2,7 @@ import { Message, PubSub } from '@google-cloud/pubsub'
 import { FuQu } from '../index'
 import test from 'ava'
 import { Logger } from '../lib/contracts/logger'
+import { FuQuMessage } from '../lib/core/components/subscriber'
 
 process.env.PUBSUB_EMULATOR_HOST = 'localhost:8681'
 process.env.PUBSUB_PROJECT_ID = 'fuqu'
@@ -37,9 +38,9 @@ test('Receive message: payload, attributes, messageId', async t => {
   let messageId: string = ''
   const { topic } = await createTopicAndSub(client, TOPIC, SUB)
 
-  const message: Message = await new Promise(async resolve => {
+  const message: FuQuMessage<Message> = await new Promise(async resolve => {
     messageId = await topic.publishMessage({ json: PAYLOAD, attributes: ATTRIBUTES })
-    const subscriber = fuQu.createSubscriber(SUB, (message: Message) => {
+    const subscriber = fuQu.createSubscriber(SUB, (message: FuQuMessage<Message>) => {
       message.ack()
       resolve(message)
       subscriber.clear()
@@ -103,7 +104,7 @@ test('Logger works', async t => {
     if (alwaysAck) {
       m.ack()
     } else {
-      JSON.parse(m.data.toString()).ok == false ? m.nack() : m.ack()
+      JSON.parse(m.data.toString()).ok == false ? m.nack(new Error('stinks')) : m.ack()
     }
     await received(m.id)
   }, { ackDeadline: 42 })
@@ -120,6 +121,8 @@ test('Logger works', async t => {
   await awaitId(nokId)
   t.like(cache.receivedMessage?.[1], { id: nokId })
   t.like(cache.nackMessage?.[1], { id: nokId })
+  t.deepEqual(cache.nackMessage?.[2], new Error('stinks'))
+
   t.is(cache.subscriberReconnected, undefined)
   alwaysAck = true
   await new Promise(resolve => setTimeout(resolve, OPTIONS.reconnectAfterMillis * 2))
@@ -138,7 +141,7 @@ test('Json parsing', async t => {
   await new Promise<void>(resolve => {
     const sub = fuquWithJson.createSubscriber(SUB, m => {
       t.like(m.jsonData, PAYLOAD)
-      m.nack()
+      m.nack(null)
       sub.clear()
       resolve()
     })
@@ -147,7 +150,7 @@ test('Json parsing', async t => {
     const sub = fuquWithoutJson.createSubscriber(SUB, m => {
       t.deepEqual(m.jsonData, {})
       t.deepEqual(m.data.toString(), JSON.stringify(PAYLOAD))
-      m.nack()
+      m.nack(null)
       sub.clear()
       resolve()
     })

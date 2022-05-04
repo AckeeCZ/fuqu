@@ -4,11 +4,12 @@ import {
   SubscriptionLike,
 } from '../../contracts/pubsub'
 import { FuQuOptions } from '../fuqu-factory'
-import { bufferParseJson } from './helpers'
+import { bufferParseJson, ReplaceAttributes } from './helpers'
 
 export type FuQuSubscriberOptions = { reconnectAfterMillis?: number, parseJson?: boolean }
+export type FuQuMessage<M extends MessageLike = MessageLike> = ReplaceAttributes<M, { nack: (reason: any) => void }> & { jsonData: any }
 export type MessageHandler<M extends MessageLike = MessageLike> = (
-  message: M & { jsonData: any }
+  message: FuQuMessage<M>
 ) => void | Promise<void>
 
 export class Subscriber {
@@ -44,7 +45,7 @@ export class Subscriber {
     })
   }
 
-  private patchMessage(message: MessageLike) {
+  private patchMessage(message: MessageLike): FuQuMessage {
     const originalAck = message.ack.bind(message)
     const originalNack = message.nack.bind(message)
     const jsonPatchedMessage = Object.assign(message, {
@@ -56,9 +57,9 @@ export class Subscriber {
         this.options?.logger?.ackMessage?.(this.subscriptionName, jsonPatchedMessage)
         this.messageOut()
       },
-      nack: () => {
+      nack: (reason: any) => {
         originalNack()
-        this.options?.logger?.nackMessage?.(this.subscriptionName, jsonPatchedMessage)
+        this.options?.logger?.nackMessage?.(this.subscriptionName, jsonPatchedMessage, reason)
         this.messageOut()
       },
     })
