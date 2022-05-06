@@ -9,4 +9,5 @@ export interface Logger<MessageOptions, SubscriptionOptions, Message extends Mes
   receivedMessage?: (subscriptionName: string, message: FuQuMessage<Message>) => void,
   ackMessage?: (subscriptionName: string, message: FuQuMessage<Message>) => void,
   nackMessage?: (subscriptionName: string, message: FuQuMessage<Message>, reason: any) => void,
+  error?: (subscriptionName: string, error: Error) => void,
 }

@@ -79,6 +79,7 @@ Implement your own logger to log events in the format you need:
 - `receivedMessage`
 - `ackMessage`
 - `nackMessage`
+- `error`
 
 > ⚠️ **Massive logs, confidential data alert** Be mindful, that some hooks (e.g. `ackMessage`) are provided the original Pub/Sub message. When it is logged directly, it can result in extremely large output (JSON representation of `Buffer`) and credential info (link to initialized Pub/Sub subscriber). Only log explicit fields to avoid these issues. See the snippet.
 
@@ -103,6 +104,14 @@ const politePersonLogger = {
     ),
 };
 ```
+
+### Error handling
+
+The original Pub/Sub subscriber is an event emitter, that can emit errors we need to handle to avoid unhandled rejected promises and unhandled errors, see [original error handling](https://github.com/googleapis/nodejs-pubsub/blob/main/samples/listenForErrors.js).
+
+Usually the errors are not even bound to a certain message (rather a batch or the connection in general), making the errors hard to react to logically, but practical to monitor. That's why it is included in the logger event.
+
+> ⚠️ **Failing to provide a handler will result in error being re-thrown in the error handler.**
 
 ### JSON parsing
 When you are working with JSON messages, it might be convenient to access the structured JSON in logger events and handler. To avoid repeated parsing from buffer, use option `parseJson`. This will make FuQu parse the JSON for you and the output is available in `message.jsonData`.
