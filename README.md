@@ -40,7 +40,7 @@ fuqu.createSubscriber('my-subscription', message => {
 })
 ```
 
-### Options
+## Options
 ```typescript
 const fuQu = FuQu(() => new PubSub(), {
     // Log by hooking on various events
@@ -61,15 +61,15 @@ const fuQu = FuQu(() => new PubSub(), {
 const noReconnectingSubscriber = fuQu.createSubscriber('sub', m => m.ack(), { reconnectAfterMillis: 0 })
 ```
 
-### Features
-#### Reconnecting (`reconnectAfterMillis`)
+## Features
+### Reconnecting (`reconnectAfterMillis`)
 After few years of using Pub/Sub, we noticed that sometimes the existing subscriber "stops" receiving messages, even though they start piling up and there are no other consumers or no pending messages. Restarting process always helps. After failing to implement a reliable health check to automatically restart the pod, we implemented a more gentle solution and implement reconnecting after a given timeout ourselves.
 
 1. If there are no messages being processed by the subscriber (all received messages are `ack`-ed or `nack`-ed)
 2. And time elapsed from last processed message in milliseconds is greater than `reconnectAfterMillis`
 3. Then clear all listeners, reinitialize the `PubSub` instance, reapply registered handlers
 
-#### Logger
+### Logger
 Implement your own logger to log events in the format you need:
 
 - `initializedPublisher`
@@ -80,7 +80,31 @@ Implement your own logger to log events in the format you need:
 - `ackMessage`
 - `nackMessage`
 
-#### JSON parsing
+> ⚠️ **Massive logs, confidential data alert** Be mindful, that some hooks (e.g. `ackMessage`) are provided the original Pub/Sub message. When it is logged directly, it can result in extremely large output (JSON representation of `Buffer`) and credential info (link to initialized Pub/Sub subscriber). Only log explicit fields to avoid these issues. See the snippet.
+
+```ts
+// BAD
+const dangerousCarelessLogger = {
+  ackMessage: (subscriptionName, message) =>
+    logger.info({ message, subscriptionName }, 'acked message'),
+};
+
+// GOOD
+const politePersonLogger = {
+  ackMessage: (subscriptionName, message) =>
+    logger.info(
+      {
+        subscriptionName,
+        id: message.id,
+        length: message.length,
+        entityId: message.jsonData.entityId,
+      },
+    'acked message'
+    ),
+};
+```
+
+### JSON parsing
 When you are working with JSON messages, it might be convenient to access the structured JSON in logger events and handler. To avoid repeated parsing from buffer, use option `parseJson`. This will make FuQu parse the JSON for you and the output is available in `message.jsonData`.
 
 When the option is disabled or parsing fails, the field will contain empty object `{}`.
