@@ -36,6 +36,7 @@ export class Subscriber {
     this.subscription.on('error', e => {
       if (this.options.logger?.error) {
         this.options.logger?.error(this.subscriptionName, e)
+        return;
       }
       throw e;
     })
