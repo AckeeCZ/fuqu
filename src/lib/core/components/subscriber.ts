@@ -46,7 +46,7 @@ export class Subscriber {
   private hookHandler() {
     this.subscription?.on('message', async (message: MessageLike) => {
       const patchedMessage = this.patchMessage(message)
-      this.options?.logger?.receivedMessage?.(this.subscriptionName, message)
+      this.options?.logger?.receivedMessage?.(this.subscriptionName, patchedMessage)
       this.messageIn()
       this.handler(patchedMessage)
     })
