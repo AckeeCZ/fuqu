@@ -79,7 +79,8 @@ const pubsubSerialMockFactory = () => {
         subscription: (_: string, options?: SubscriptionOptionsLike) => {
           maxConcurrentMessages = options?.batching?.maxMessages ?? 1
           return {
-            on: (_: string, listener: (...args: any[]) => void) => {
+            on: (event: string, listener: (...args: any[]) => void) => {
+              if (event !== 'message') return
               subscribersHooked++
               handlers.push(listener)
             },
