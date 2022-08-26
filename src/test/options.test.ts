@@ -13,7 +13,7 @@ const pubsubMock = {
     }
   },
 }
-const fuQu = FuQu<unknown, any>(() => pubsubMock, {
+const fuQu = FuQu<any, any>(() => pubsubMock, {
   foo: 'default',
 })
 test('Subscription called with default options', t => {

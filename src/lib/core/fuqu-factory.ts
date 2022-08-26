@@ -1,4 +1,4 @@
-import { MessageLike, PubSubLike, SubscriptionOptionsLike } from "../contracts/pubsub";
+import { MessageLike, MessageOptionsLike, PubSubLike, SubscriptionOptionsLike } from "../contracts/pubsub";
 import { FuQuInstance } from "./fuqu";
 import { FuQuSubscriberOptions, Subscriber } from "./components/subscriber";
 import { Logger } from "../contracts/logger";
@@ -6,7 +6,7 @@ import { Logger } from "../contracts/logger";
 export type FuQuOptions = FuQuSubscriberOptions & { logger?: Logger<any, any, any> }
 
 export type FuQuFactory = <
-  MessageOptions,
+  MessageOptions extends MessageOptionsLike,
   SubscriptionOptions extends SubscriptionOptionsLike,
 >(
   createClient: () => PubSubLike<MessageOptions, SubscriptionOptions>,
