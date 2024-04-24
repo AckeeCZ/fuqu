@@ -6,7 +6,7 @@ export interface PubSubLike<MessageOptions, SubscriptionOptions> {
     name: string,
     options?: SubscriptionOptions
   ) => {
-    on: (event: string, listener: (...args: any[]) => void) => any
+    on(event: string, listener: (...args: any[]) => void): any
     removeAllListeners: () => any
   }
 }
