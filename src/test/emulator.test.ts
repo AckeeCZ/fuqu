@@ -1,4 +1,4 @@
-import { Message, PubSub } from '@google-cloud/pubsub'
+import { Duration, Message, PubSub } from '@google-cloud/pubsub'
 import { FuQu } from '../index'
 import test from 'ava'
 import { Logger } from '../lib/contracts/logger'
@@ -109,6 +109,14 @@ test('Logger works', async t => {
     await received(m.id)
   }, { ackDeadline: 42 })
   t.deepEqual(cache.initializedSubscriber, [SUB, Object.assign(OPTIONS, { ackDeadline: 42 })])
+  t.deepEqual(cache.initializedSubscriber, [
+    SUB,
+    Object.assign(OPTIONS, {
+      ackDeadline: 42,
+      maxAckDeadline: Duration.from({ millis: 42000 }),
+      minAckDeadline: Duration.from({ millis: 42000 }),
+    }),
+  ])
 
   const okId = await publisher.publish({ json: { ok: true } })
   t.is(cache.publishedMessage?.[1].json.ok, true)
