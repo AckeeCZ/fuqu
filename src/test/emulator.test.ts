@@ -15,32 +15,36 @@ const createTopicAndSub = async (
   topicName: string,
   subName: string
 ) => {
-  await client.topic(topicName).delete().catch((err) => {
-    if (err.code !== 5) {
-      throw err
-    }
-  })
+  await client
+    .topic(topicName)
+    .delete()
+    .catch(err => {
+      if (err.code !== 5) {
+        throw err
+      }
+    })
   await client
     .subscription(subName)
     .delete()
-    .catch(() => {
-    })
+    .catch(() => {})
   const [topic] = await client.createTopic(topicName)
   const [subscription] = await topic.createSubscription(subName)
-  return {topic, subscription}
+  return { topic, subscription }
 }
 
-test.only('Publish message: payload, attributes, messageId', async t => {
+test('Publish message: payload, attributes, messageId', async t => {
   const TOPIC = 'pub'
   const SUB = 'work'
-  const PAYLOAD = {beers: 6 * 3, purpose: 'HO', stamp: Date.now()}
-  const ATTRIBUTES = {deliveryId: 'RDG10'}
+  const PAYLOAD = { beers: 6 * 3, purpose: 'HO', stamp: Date.now() }
+  const ATTRIBUTES = { deliveryId: 'RDG10' }
   let messageId: string = ''
-  const {subscription, topic} = await createTopicAndSub(client, TOPIC, SUB)
+  const { subscription, topic } = await createTopicAndSub(client, TOPIC, SUB)
 
   const publisher = fuQu.createPublisher(TOPIC)
 
-  const receivePromise = new Promise<Message>(resolve => subscription.on('message', resolve))
+  const receivePromise = new Promise<Message>(resolve =>
+    subscription.on('message', resolve)
+  )
   void publisher.publish({ json: PAYLOAD, attributes: ATTRIBUTES })
   const message = await receivePromise
 
@@ -54,19 +58,25 @@ test.only('Publish message: payload, attributes, messageId', async t => {
 test('Receive message: payload, attributes, messageId', async t => {
   const TOPIC = 'top-topic'
   const SUB = 'top-subscription'
-  const PAYLOAD = {fizzy: true, stamp: Date.now()}
-  const ATTRIBUTES = {type: 'green'}
+  const PAYLOAD = { fizzy: true, stamp: Date.now() }
+  const ATTRIBUTES = { type: 'green' }
   let messageId: string = ''
-  const {topic} = await createTopicAndSub(client, TOPIC, SUB)
+  const { topic } = await createTopicAndSub(client, TOPIC, SUB)
 
   const message: FuQuMessage<Message> = await (async () => {
-    messageId = await topic.publishMessage({json: PAYLOAD, attributes: ATTRIBUTES})
+    messageId = await topic.publishMessage({
+      json: PAYLOAD,
+      attributes: ATTRIBUTES,
+    })
     return new Promise(resolve => {
-      const subscriber = fuQu.createSubscriber(SUB, (message: FuQuMessage<Message>) => {
-        message.ack()
-        resolve(message)
-        subscriber.clear()
-      })
+      const subscriber = fuQu.createSubscriber(
+        SUB,
+        (message: FuQuMessage<Message>) => {
+          message.ack()
+          resolve(message)
+          subscriber.clear()
+        }
+      )
     })
   })()
   t.like(message.attributes, ATTRIBUTES)
@@ -77,15 +87,17 @@ test('Receive message: payload, attributes, messageId', async t => {
 test('Logger works', async t => {
   const TOPIC = 'logopic'
   const SUB = 'logiption'
-  const PAYLOAD = {logs: 2, stamp: Date.now()}
-  const ATTRIBUTES = {carrier: 'boat'}
+  const PAYLOAD = { logs: 2, stamp: Date.now() }
+  const ATTRIBUTES = { carrier: 'boat' }
   await createTopicAndSub(client, TOPIC, SUB)
 
   const cache: { [k in keyof Logger<any, any, any>]?: any[] } = {}
-  const store = (key: string) => (...args: any[]) => {
-    cache[key as keyof Logger<any, any, any>] = args
-    return cache
-  }
+  const store =
+    (key: string) =>
+    (...args: any[]) => {
+      cache[key as keyof Logger<any, any, any>] = args
+      return cache
+    }
   const OPTIONS = {
     logger: {
       publishedMessage: store('publishedMessage'),
@@ -96,7 +108,7 @@ test('Logger works', async t => {
       receivedMessage: store('receivedMessage'),
       subscriberReconnected: store('subscriberReconnected'),
     },
-    reconnectAfterMillis: 250
+    reconnectAfterMillis: 250,
   }
   const fuQu = FuQu(() => new PubSub(), OPTIONS)
 
@@ -121,56 +133,73 @@ test('Logger works', async t => {
   const publisher = fuQu.createPublisher(TOPIC)
   t.deepEqual(cache.initializedPublisher, [TOPIC])
 
-  await publisher.publish({json: PAYLOAD, attributes: ATTRIBUTES})
-  t.deepEqual(cache.publishedMessage, [TOPIC, {json: PAYLOAD, attributes: ATTRIBUTES}])
+  await publisher.publish({ json: PAYLOAD, attributes: ATTRIBUTES })
+  t.deepEqual(cache.publishedMessage, [
+    TOPIC,
+    { json: PAYLOAD, attributes: ATTRIBUTES },
+  ])
 
   let alwaysAck = false
-  fuQu.createSubscriber(SUB, async m => {
-    if (alwaysAck) {
-      m.ack()
-    } else {
-      !JSON.parse(m.data.toString()).ok ? m.nack(new Error('stinks')) : m.ack()
-    }
-    await received(m.id)
-  }, {ackDeadline: 42})
-  t.deepEqual(cache.initializedSubscriber, [SUB, Object.assign(OPTIONS, {ackDeadline: 42})])
+  fuQu.createSubscriber(
+    SUB,
+    async m => {
+      if (alwaysAck) {
+        m.ack()
+      } else {
+        !JSON.parse(m.data.toString()).ok
+          ? m.nack(new Error('stinks'))
+          : m.ack()
+      }
+      await received(m.id)
+    },
+    { ackDeadline: 42 }
+  )
+  t.deepEqual(cache.initializedSubscriber, [
+    SUB,
+    Object.assign(OPTIONS, { ackDeadline: 42 }),
+  ])
   t.deepEqual(cache.initializedSubscriber, [
     SUB,
     Object.assign(OPTIONS, {
       ackDeadline: 42,
-      maxAckDeadline: Duration.from({millis: 42000}),
-      minAckDeadline: Duration.from({millis: 42000}),
+      maxAckDeadline: Duration.from({ millis: 42000 }),
+      minAckDeadline: Duration.from({ millis: 42000 }),
     }),
   ])
 
-  const okId = await publisher.publish({json: {ok: true}})
+  const okId = await publisher.publish({ json: { ok: true } })
   t.is(cache.publishedMessage?.[1].json.ok, true)
   await awaitId(okId)
-  t.like(cache.receivedMessage?.[1], {id: okId})
-  t.like(cache.ackMessage?.[1], {id: okId})
+  t.like(cache.receivedMessage?.[1], { id: okId })
+  t.like(cache.ackMessage?.[1], { id: okId })
 
-  const nokId = await publisher.publish({json: {ok: false}})
+  const nokId = await publisher.publish({ json: { ok: false } })
   t.is(cache.publishedMessage?.[1].json.ok, false)
   await awaitId(nokId)
-  t.like(cache.receivedMessage?.[1], {id: nokId})
-  t.like(cache.nackMessage?.[1], {id: nokId})
+  t.like(cache.receivedMessage?.[1], { id: nokId })
+  t.like(cache.nackMessage?.[1], { id: nokId })
   t.deepEqual(cache.nackMessage?.[2], new Error('stinks'))
 
   t.is(cache.subscriberReconnected, undefined)
   alwaysAck = true
-  await new Promise(resolve => setTimeout(resolve, OPTIONS.reconnectAfterMillis * 2))
-  t.deepEqual(cache.subscriberReconnected, [SUB, Object.assign(OPTIONS, {ackDeadline: 42})])
+  await new Promise(resolve =>
+    setTimeout(resolve, OPTIONS.reconnectAfterMillis * 2)
+  )
+  t.deepEqual(cache.subscriberReconnected, [
+    SUB,
+    Object.assign(OPTIONS, { ackDeadline: 42 }),
+  ])
 })
 
 test('Json parsing', async t => {
-  const fuquWithJson = FuQu(() => new PubSub(), {parseJson: true})
-  const fuquWithoutJson = FuQu(() => new PubSub(), {parseJson: false})
+  const fuquWithJson = FuQu(() => new PubSub(), { parseJson: true })
+  const fuquWithoutJson = FuQu(() => new PubSub(), { parseJson: false })
   const TOPIC = 'parse-test-topic'
   const SUB = 'parse-test-sub'
-  const PAYLOAD = {fak: 'ju', indeed: true}
+  const PAYLOAD = { fak: 'ju', indeed: true }
   await createTopicAndSub(client, TOPIC, SUB)
 
-  void fuQu.createPublisher(TOPIC).publish({json: PAYLOAD})
+  void fuQu.createPublisher(TOPIC).publish({ json: PAYLOAD })
   await new Promise<void>(resolve => {
     const sub = fuquWithJson.createSubscriber(SUB, m => {
       t.like(m.jsonData, PAYLOAD)

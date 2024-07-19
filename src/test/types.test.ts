@@ -16,11 +16,15 @@ test('Publish: JSON interface', async t => {
   } catch {}
   try {
     // ok
-    void fuQu.createPublisher<{ foo: string }>('').publish({ json: { foo: '' } })
+    void fuQu
+      .createPublisher<{ foo: string }>('')
+      .publish({ json: { foo: '' } })
   } catch {}
   try {
     // @ts-expect-error (mismatch)
-    void fuQu.createPublisher<{ bar: string }>('').publish({ json: { foo: '' } })
+    void fuQu
+      .createPublisher<{ bar: string }>('')
+      .publish({ json: { foo: '' } })
   } catch {}
   try {
     // @ts-expect-error (missing JSON)
