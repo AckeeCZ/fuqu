@@ -7,7 +7,7 @@ export type FuQuInstance<
   MessageOptions extends MessageOptionsLike,
   SubscriptionOptions extends SubscriptionOptionsLike,
 > = {
-  createPublisher: <JsonType extends any = any>(topicName: string) => FuQuPublisher<OverrideJsonType<MessageOptions, JsonType>>
+  createPublisher: <JsonType = any>(topicName: string) => FuQuPublisher<OverrideJsonType<MessageOptions, JsonType>>
   createSubscriber: <M extends MessageLike = MessageLike>(
     subscriptionName: string,
     handler: MessageHandler<M>,

@@ -1,4 +1,4 @@
-import { MessageLike, MessageOptionsLike, PubSubLike, SubscriptionOptionsLike } from "../contracts/pubsub";
+import { MessageOptionsLike, PubSubLike, SubscriptionOptionsLike } from "../contracts/pubsub";
 import { FuQuInstance } from "./fuqu";
 import { FuQuSubscriberOptions, Subscriber } from "./components/subscriber";
 import { Logger } from "../contracts/logger";

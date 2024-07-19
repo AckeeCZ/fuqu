@@ -48,7 +48,7 @@ export class Subscriber {
       const patchedMessage = this.patchMessage(message)
       this.options?.logger?.receivedMessage?.(this.subscriptionName, patchedMessage)
       this.messageIn()
-      this.handler(patchedMessage)
+      void this.handler(patchedMessage)
     })
   }
 

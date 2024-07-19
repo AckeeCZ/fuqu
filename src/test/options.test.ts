@@ -8,7 +8,7 @@ const pubsubMock = {
   subscription: (_: any, options?: any) => {
     lastOptions = options
     return {
-      on: (event: string, listener: (...args: any[]) => void) => {},
+      on: (_event: string, _listener: (...args: any[]) => void) => {},
       removeAllListeners: () => {},
     }
   },

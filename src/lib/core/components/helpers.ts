@@ -12,7 +12,7 @@ type IsAny<T> = 0 extends (1 & T) ? true : false
 
 // Check for: Argument of type 'SUBTYPE' is not assignable to parameter of type 'TYPE'. 'TYPE' could be instantiated with an arbitrary type which could be unrelated to 'SUBTYPE'.
 export type AssertExtends<A, Parent> = A extends Parent ? A : never
-export type OverrideJsonType<MessageOptions extends MessageOptionsLike, CustomType extends any> =
+export type OverrideJsonType<MessageOptions extends MessageOptionsLike, CustomType> =
     IsAny<CustomType> extends true
         ? MessageOptions
         : AssertExtends<Omit<MessageOptions, 'json'> & { json: CustomType }, MessageOptions>
