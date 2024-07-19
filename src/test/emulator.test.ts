@@ -45,7 +45,7 @@ test('Publish message: payload, attributes, messageId', async t => {
   const receivePromise = new Promise<Message>(resolve =>
     subscription.on('message', resolve)
   )
-  void publisher.publish({ json: PAYLOAD, attributes: ATTRIBUTES })
+  messageId = await publisher.publish({ json: PAYLOAD, attributes: ATTRIBUTES })
   const message = await receivePromise
 
   message.ack()
@@ -146,24 +146,18 @@ test('Logger works', async t => {
       if (alwaysAck) {
         m.ack()
       } else {
-        !JSON.parse(m.data.toString()).ok
-          ? m.nack(new Error('stinks'))
-          : m.ack()
+        JSON.parse(m.data.toString()).ok === true
+          ? m.ack()
+          : m.nack(new Error('stinks'))
       }
       await received(m.id)
     },
-    { ackDeadline: 42 }
+    { minAckDeadline: Duration.from({ seconds: 42 }) }
   )
   t.deepEqual(cache.initializedSubscriber, [
     SUB,
-    Object.assign(OPTIONS, { ackDeadline: 42 }),
-  ])
-  t.deepEqual(cache.initializedSubscriber, [
-    SUB,
     Object.assign(OPTIONS, {
-      ackDeadline: 42,
-      maxAckDeadline: Duration.from({ millis: 42000 }),
-      minAckDeadline: Duration.from({ millis: 42000 }),
+      minAckDeadline: Duration.from({ seconds: 42 }),
     }),
   ])
 
@@ -187,7 +181,7 @@ test('Logger works', async t => {
   )
   t.deepEqual(cache.subscriberReconnected, [
     SUB,
-    Object.assign(OPTIONS, { ackDeadline: 42 }),
+    Object.assign(OPTIONS, { minAckDeadline: Duration.from({ seconds: 42 }) }),
   ])
 })
 
