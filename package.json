@@ -2,6 +2,7 @@
   "name": "fuqu",
   "description": "Library used for manipulating with queues",
   "main": "dist/index.js",
+  "keywords": ["pubsub", "google", "queue"],
   "scripts": {
     "test": "ava",
     "build": "tsc -p .",
