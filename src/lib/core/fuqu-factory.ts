@@ -1,31 +1,32 @@
-import { MessageLike, MessageOptionsLike, PubSubLike, SubscriptionOptionsLike } from "../contracts/pubsub";
-import { FuQuInstance } from "./fuqu";
-import { FuQuSubscriberOptions, Subscriber } from "./components/subscriber";
-import { Logger } from "../contracts/logger";
+import {
+  MessageOptionsLike,
+  PubSubLike,
+  SubscriptionOptionsLike,
+} from '../contracts/pubsub'
+import { FuQuInstance } from './fuqu'
+import { FuQuSubscriberOptions, Subscriber } from './components/subscriber'
+import { Logger } from '../contracts/logger'
 
-export type FuQuOptions = FuQuSubscriberOptions & { logger?: Logger<any, any, any> }
+export type FuQuOptions = FuQuSubscriberOptions & {
+  logger?: Logger<any, any, any>
+}
 
 export type FuQuFactory = <
   MessageOptions extends MessageOptionsLike,
-  SubscriptionOptions extends SubscriptionOptionsLike,
+  SubscriptionOptions extends SubscriptionOptionsLike
 >(
   createClient: () => PubSubLike<MessageOptions, SubscriptionOptions>,
   options?: SubscriptionOptions & FuQuOptions
 ) => FuQuInstance<MessageOptions, SubscriptionOptions>
 
-
-
-export const FuQu: FuQuFactory = (
-  createClient,
-  options
-) => {
+export const FuQu: FuQuFactory = (createClient, options) => {
   return {
     createPublisher: topicName => {
       const client = createClient()
       const topic = client.topic(topicName)
       options?.logger?.initializedPublisher?.(topicName)
       return {
-        publish: async (messageOptions) => {
+        publish: async messageOptions => {
           options?.logger?.publishedMessage?.(topicName, messageOptions)
           const result = await topic.publishMessage(messageOptions)
           return String(result)
@@ -41,11 +42,7 @@ export const FuQu: FuQuFactory = (
         createClient,
         subscriptionName,
         handler,
-        Object.assign(
-          {},
-          options,
-          additionalSubscriptionOptions
-        )
+        Object.assign({}, options, additionalSubscriptionOptions)
       )
     },
   }

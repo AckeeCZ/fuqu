@@ -6,8 +6,12 @@ import {
 import { FuQuOptions } from '../fuqu-factory'
 import { bufferParseJson, ReplaceAttributes } from './helpers'
 
-export type FuQuSubscriberOptions = { reconnectAfterMillis?: number, parseJson?: boolean }
-export type FuQuMessage<M extends MessageLike = MessageLike> = ReplaceAttributes<M, { nack: (reason: any) => void }> & { jsonData: any }
+export type FuQuSubscriberOptions = {
+  reconnectAfterMillis?: number
+  parseJson?: boolean
+}
+export type FuQuMessage<M extends MessageLike = MessageLike> =
+  ReplaceAttributes<M, { nack: (reason: any) => void }> & { jsonData: any }
 export type MessageHandler<M extends MessageLike = MessageLike> = (
   message: FuQuMessage<M>
 ) => void | Promise<void>
@@ -36,9 +40,9 @@ export class Subscriber {
     this.subscription.on('error', e => {
       if (this.options.logger?.error) {
         this.options.logger?.error(this.subscriptionName, e)
-        return;
+        return
       }
-      throw e;
+      throw e
     })
     this.hookHandler()
   }
@@ -46,9 +50,12 @@ export class Subscriber {
   private hookHandler() {
     this.subscription?.on('message', async (message: MessageLike) => {
       const patchedMessage = this.patchMessage(message)
-      this.options?.logger?.receivedMessage?.(this.subscriptionName, patchedMessage)
+      this.options?.logger?.receivedMessage?.(
+        this.subscriptionName,
+        patchedMessage
+      )
       this.messageIn()
-      this.handler(patchedMessage)
+      void this.handler(patchedMessage)
     })
   }
 
@@ -56,17 +63,24 @@ export class Subscriber {
     const originalAck = message.ack.bind(message)
     const originalNack = message.nack.bind(message)
     const jsonPatchedMessage = Object.assign(message, {
-      jsonData: this.options.parseJson ? bufferParseJson(message.data) : {}
+      jsonData: this.options.parseJson ? bufferParseJson(message.data) : {},
     })
     return Object.assign(jsonPatchedMessage, {
       ack: () => {
         originalAck()
-        this.options?.logger?.ackMessage?.(this.subscriptionName, jsonPatchedMessage)
+        this.options?.logger?.ackMessage?.(
+          this.subscriptionName,
+          jsonPatchedMessage
+        )
         this.messageOut()
       },
       nack: (reason: any) => {
         originalNack()
-        this.options?.logger?.nackMessage?.(this.subscriptionName, jsonPatchedMessage, reason)
+        this.options?.logger?.nackMessage?.(
+          this.subscriptionName,
+          jsonPatchedMessage,
+          reason
+        )
         this.messageOut()
       },
     })
@@ -93,7 +107,10 @@ export class Subscriber {
 
   private refresh() {
     if (!this.isDry()) return
-    this.options?.logger?.subscriberReconnected?.(this.subscriptionName, this.options)
+    this.options?.logger?.subscriberReconnected?.(
+      this.subscriptionName,
+      this.options
+    )
     this.clear()
     this.setup()
   }
