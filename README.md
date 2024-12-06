@@ -1,3 +1,35 @@
+# Deprecation Notice
+
+## Status: Deprecated ⚠️
+
+This package is now deprecated and will no longer receive updates. We recommend migrating to official solutions for your pub/sub and messaging needs.
+
+### Why are we deprecating?
+
+After careful consideration, we've decided to deprecate `fuqu` because:
+
+1. Modern official pub/sub libraries and messaging solutions now provide excellent native functionality
+2. Maintaining an abstraction layer over these services adds unnecessary complexity to codebases
+3. Direct usage of official SDKs offers better type safety, up-to-date features, and comprehensive documentation
+
+### Recommended Alternatives
+
+We recommend migrating to official solutions based on your specific needs:
+
+- Google Cloud Pub/Sub: [Official Client Libraries](https://cloud.google.com/pubsub/docs/reference/libraries)
+- AWS SNS/SQS: [AWS SDK](https://aws.amazon.com/sdk-for-javascript/)
+- Azure Service Bus: [Azure SDK](https://learn.microsoft.com/en-us/javascript/api/overview/azure/service-bus)
+
+### Thank You
+
+We want to thank all contributors and users who have supported this package. While `fuqu` served its purpose during its active period, we believe pointing users toward official solutions will provide a better developer experience in the long run.
+
+### Support
+
+This repository will remain available for reference, but we encourage all users to migrate to the recommended alternatives. No new features or bug fixes will be implemented.
+
+---
+
 <div align="center">
 
 
